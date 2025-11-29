@@ -1,10 +1,16 @@
 <nav>
-    <section>
-        <header>Overview</header>
-        <ul>
-            <li>
-                <NavLink href="/">Index</NavLink>
-            </li>
-        </ul>
-    </section>
+    @foreach (var group in NavigationProvider.Sections)
+    {
+        <section>
+            <header>@group.Header.Name</header>
+            <ul>
+                <li>
+                    @foreach (var entry in group.Entries)
+                    {
+                        <NavLink href="@entry.Url">@entry.Name</NavLink>
+                    }
+                </li>
+            </ul>
+        </section>
+    }
 </nav>
