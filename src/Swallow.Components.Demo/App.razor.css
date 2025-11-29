@@ -1,0 +1,26 @@
+#app {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+
+    display: grid;
+    grid-template:
+        "head head" 70px
+        "side main" auto
+        / 200px auto;
+}
+
+header {
+    grid-area: head;
+    overflow: hidden;
+}
+
+aside {
+    grid-area: side;
+    overflow: hidden auto;
+}
+
+main {
+    grid-area: main;
+    overflow: auto;
+}

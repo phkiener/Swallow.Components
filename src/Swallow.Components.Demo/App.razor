@@ -1,1 +1,19 @@
-﻿<h1>Hello, World</h1>
+﻿<div id="app">
+    <header>
+        <PageHeader />
+    </header>
+
+    <aside>
+        <NavigationSidebar />
+    </aside>
+
+    <main>
+        <article>
+            <Router AppAssembly="@typeof(App).Assembly" NotFoundPage="@typeof(NotFound)">
+                <Found>
+                    <RouteView RouteData="context" />
+                </Found>
+            </Router>
+        </article>
+    </main>
+</div>
