@@ -12,9 +12,11 @@
     font-family: sans-serif;
     font-size: 16px;
 
-    color-scheme: light dark;
     background: light-dark(white, black);
     color: light-dark(black, white);
+
+    transition-duration: 200ms;
+    transition-property: color, background-color, outline-color, border-color;
 }
 
 header {
@@ -32,27 +34,8 @@ main {
     overflow: auto;
 }
 
-#app[theme="Dark"] {
-    color-scheme: only dark;
-}
-
-#app[theme="Light"] {
-    color-scheme: only light;
-}
-
-#app[theme="Light"] ::deep [only-dark],
-#app[theme="Dark"] ::deep [only-light] {
-    display: none;
-}
-
-@media (prefers-color-scheme: light) {
-    #app:not([theme]) ::deep [only-dark] {
-        display: none;
-    }
-}
-
-@media (prefers-color-scheme: dark) {
-    #app:not([theme]) ::deep [only-light] {
-        display: none;
+@media screen and (prefers-reduced-motion: reduce), (update: slow) {
+    #app {
+        transition-duration: 0s;
     }
 }

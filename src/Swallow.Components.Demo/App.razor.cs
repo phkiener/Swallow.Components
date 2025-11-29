@@ -7,6 +7,13 @@ public sealed partial class App : ComponentBase, IDisposable
 {
     private Theme? currentTheme = null;
 
+    private string? theme => currentTheme switch
+    {
+        Theme.Light => "light",
+        Theme.Dark => "dark",
+        _ => null
+    };
+
     protected override void OnAfterRender(bool firstRender)
     {
         if (firstRender)

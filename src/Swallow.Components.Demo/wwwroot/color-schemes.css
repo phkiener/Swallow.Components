@@ -1,0 +1,31 @@
+:root {
+    color-scheme: light dark;
+
+    @media (prefers-color-scheme: light) {
+        &:not(:has([theme])) [only-dark] {
+            display: none;
+        }
+    }
+
+    @media (prefers-color-scheme: dark) {
+        &:not(:has([theme])) [only-light] {
+            display: none;
+        }
+    }
+}
+
+[theme="dark"] {
+    color-scheme: only dark;
+
+    [only-light] {
+        display: none;
+    }
+}
+
+[theme="light"] {
+    color-scheme: only light;
+
+    [only-dark] {
+        display: none;
+    }
+}
