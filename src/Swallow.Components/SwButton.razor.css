@@ -1,0 +1,46 @@
+button {
+    position: relative;
+    vertical-align: middle;
+
+    isolation: isolate;
+    appearance: none;
+    outline: 0;
+
+    height: 2.5rem;
+    min-width: 2.5rem;
+    padding-inline: 1rem;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+
+    border-radius: 0.25rem;
+    border-width: 1px;
+    border-color: transparent;
+
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.25rem;
+    white-space: nowrap;
+
+    background: black;
+    color: white;
+
+    user-select: none;
+    cursor: pointer;
+}
+
+button:hover:not:disabled {
+    background: color-mix(in srgb, black 90%, transparent);
+}
+
+button:focus-visible {
+    outline: black solid 2px;
+    outline-offset: 2px;
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
