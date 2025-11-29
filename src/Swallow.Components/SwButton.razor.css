@@ -24,19 +24,19 @@ button {
     line-height: 1.25rem;
     white-space: nowrap;
 
-    background: black;
-    color: white;
+    background: light-dark(black, white);
+    color: light-dark(white, black);
 
     user-select: none;
     cursor: pointer;
 }
 
 button:hover:not:disabled {
-    background: color-mix(in srgb, black 90%, transparent);
+    background: color-mix(in srgb, light-dark(black, white) 90%, transparent);
 }
 
 button:focus-visible {
-    outline: black solid 2px;
+    outline: light-dark(black, white) solid 2px;
     outline-offset: 2px;
 }
 
