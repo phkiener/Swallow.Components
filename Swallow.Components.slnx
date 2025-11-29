@@ -8,4 +8,6 @@
     <File Path="NuGet.config" />
     <File Path="README.md" />
   </Folder>
+  <Project Path="src/Swallow.Components.Demo/Swallow.Components.Demo.csproj" />
+  <Project Path="src/Swallow.Components/Swallow.Components.csproj" />
 </Solution>
