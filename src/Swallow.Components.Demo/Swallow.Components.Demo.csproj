@@ -12,13 +12,4 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.0" PrivateAssets="all" />
   </ItemGroup>
 
-  <ItemGroup>
-    <_ContentIncludedByDefault Remove="wwwroot\css\app.css" />
-    <_ContentIncludedByDefault Remove="wwwroot\sample-data\weather.json" />
-    <_ContentIncludedByDefault Remove="Pages\Counter.razor" />
-    <_ContentIncludedByDefault Remove="Pages\Home.razor" />
-    <_ContentIncludedByDefault Remove="Pages\NotFound.razor" />
-    <_ContentIncludedByDefault Remove="Pages\Weather.razor" />
-  </ItemGroup>
-
 </Project>
