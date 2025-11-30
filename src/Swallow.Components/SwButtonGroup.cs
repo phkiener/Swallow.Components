@@ -15,6 +15,9 @@ public sealed class SwButtonGroup : ComponentBase
     [Parameter]
     public ButtonVariant? Variant { get; set; }
 
+    [Parameter]
+    public ButtonRounding? Rounding { get; set; }
+
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
         builder.OpenComponent<CascadingValue<SwButtonGroup>>(0);

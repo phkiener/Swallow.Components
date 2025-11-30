@@ -28,3 +28,10 @@ This is the main page.
         <SwButton Variant="@variant">@variant</SwButton>
     }
 </p>
+
+<p style="display: flex; flex-direction: row; gap: 1ch; align-items: center">
+    @foreach (var rounding in Enum.GetValues<ButtonRounding>())
+    {
+        <SwButton Rounding="@rounding">@rounding</SwButton>
+    }
+</p>

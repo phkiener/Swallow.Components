@@ -13,10 +13,10 @@ button {
     justify-content: center;
     gap: 0.5rem;
 
-    border-radius: 0.25rem;
+    border-radius: var(--radius-border);
     border-width: 1px;
     border-style: solid;
-    border-color: var(--color-border, transparent);
+    border-color: var(--color-border);
 
     background: var(--color-bg);
     color: var(--color-fg);
@@ -116,6 +116,36 @@ button.variant-plain {
     --color-border: transparent;
 
     --color-fg: light-dark(black, white);
+}
+
+/* Rounding */
+
+button.rounding-none {
+    --radius-border: 0;
+}
+
+button.rounding-small {
+    --radius-border: 0.25rem;
+}
+
+button.rounding-normal {
+    --radius-border: 0.375rem;
+}
+
+button.rounding-large {
+    --radius-border: 0.5rem;
+}
+
+button.rounding-extra {
+    --radius-border: 0.75rem;
+}
+
+button.rounding-half {
+    --radius-border: 1rem;
+}
+
+button.rounding-full {
+    --radius-border: 9999px;
 }
 
 /* Animation */

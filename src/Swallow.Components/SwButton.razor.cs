@@ -18,6 +18,9 @@ public sealed partial class SwButton : ComponentBase
     public ButtonVariant? Variant { get; set; }
 
     [Parameter]
+    public ButtonRounding? Rounding { get; set; }
+
+    [Parameter]
     [EditorRequired]
     public required RenderFragment ChildContent { get; set; }
 
@@ -48,6 +51,19 @@ public sealed partial class SwButton : ComponentBase
             ButtonVariant.Outline => "variant-outline",
             ButtonVariant.Ghost => "variant-ghost",
             ButtonVariant.Plain => "variant-plain",
+            _ => null
+        };
+
+        var buttonRounding = Rounding ?? ButtonGroup?.Rounding ?? ButtonRounding.Normal;
+        yield return buttonRounding switch
+        {
+            ButtonRounding.None => "rounding-none",
+            ButtonRounding.Small => "rounding-small",
+            ButtonRounding.Normal => "rounding-normal",
+            ButtonRounding.Large => "rounding-large",
+            ButtonRounding.Extra => "rounding-extra",
+            ButtonRounding.Half => "rounding-half",
+            ButtonRounding.Full => "rounding-full",
             _ => null
         };
 
