@@ -6,10 +6,6 @@ button {
     appearance: none;
     outline: 0;
 
-    height: 2.5rem;
-    min-width: 2.5rem;
-    padding-inline: 1rem;
-
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -29,6 +25,36 @@ button {
 
     user-select: none;
     cursor: pointer;
+}
+
+button.size-small {
+    height: 1.5rem;
+    min-width: 1.5rem;
+    padding-inline: 0.33rem;
+}
+
+button.size-smaller {
+    height: 2rem;
+    min-width: 2rem;
+    padding-inline: 0.66rem;
+}
+
+button.size-normal {
+    height: 2.5rem;
+    min-width: 2.5rem;
+    padding-inline: 1rem;
+}
+
+button.size-larger {
+    height: 3em;
+    min-width: 3rem;
+    padding-inline: 1.33rem;
+}
+
+button.size-large {
+    height: 3.5em;
+    min-width: 3.5rem;
+    padding-inline: 1.66rem;
 }
 
 button:hover:not:disabled {
