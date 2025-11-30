@@ -1,4 +1,4 @@
-namespace Swallow.Components;
+namespace Swallow.Components.Buttons;
 
 public enum ButtonSize
 {
