@@ -3,14 +3,28 @@
 
 This is the main page.
 
-<p>
+<p style="display: flex; flex-direction: row; gap: 1ch; align-items: center">
     <SwButton>Hello, World</SwButton>
     <SwButton disabled>Hello, World</SwButton>
 </p>
 
-<p>
+<p style="display: flex; flex-direction: row; gap: 1ch; align-items: center">
     <SwButtonGroup Size="ButtonSize.Large">
         <SwButton>Large</SwButton>
         <SwButton Size="ButtonSize.Small">Small</SwButton>
     </SwButtonGroup>
+</p>
+
+<p style="display: flex; flex-direction: row; gap: 1ch; align-items: center">
+    @foreach (var size in Enum.GetValues<ButtonSize>())
+    {
+        <SwButton Size="@size">@size</SwButton>
+    }
+</p>
+
+<p style="display: flex; flex-direction: row; gap: 1ch; align-items: center">
+    @foreach (var variant in Enum.GetValues<ButtonVariant>())
+    {
+        <SwButton Variant="@variant">@variant</SwButton>
+    }
 </p>

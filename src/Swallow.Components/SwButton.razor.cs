@@ -15,6 +15,9 @@ public sealed partial class SwButton : ComponentBase
     public ButtonSize? Size { get; set; }
 
     [Parameter]
+    public ButtonVariant? Variant { get; set; }
+
+    [Parameter]
     [EditorRequired]
     public required RenderFragment ChildContent { get; set; }
 
@@ -34,6 +37,17 @@ public sealed partial class SwButton : ComponentBase
             ButtonSize.Normal => "size-normal",
             ButtonSize.Larger => "size-larger",
             ButtonSize.Large => "size-large",
+            _ => null
+        };
+
+        var buttonVariant = Variant ?? ButtonGroup?.Variant ?? ButtonVariant.Subtle;
+        yield return buttonVariant switch
+        {
+            ButtonVariant.Solid => "variant-solid",
+            ButtonVariant.Subtle => "variant-subtle",
+            ButtonVariant.Outline => "variant-outline",
+            ButtonVariant.Ghost => "variant-ghost",
+            ButtonVariant.Plain => "variant-plain",
             _ => null
         };
 

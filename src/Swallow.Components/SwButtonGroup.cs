@@ -12,6 +12,9 @@ public sealed class SwButtonGroup : ComponentBase
     [Parameter]
     public ButtonSize? Size { get; set; }
 
+    [Parameter]
+    public ButtonVariant? Variant { get; set; }
+
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
         builder.OpenComponent<CascadingValue<SwButtonGroup>>(0);

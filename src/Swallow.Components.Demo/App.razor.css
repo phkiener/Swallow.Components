@@ -16,7 +16,7 @@
     color: light-dark(black, white);
 
     transition-duration: 200ms;
-    transition-property: color, background-color, outline-color, border-color;
+    transition-property: color, background, outline, border;
 }
 
 header {

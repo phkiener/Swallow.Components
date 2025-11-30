@@ -1,3 +1,5 @@
+/* Common */
+
 button {
     position: relative;
     vertical-align: middle;
@@ -13,19 +15,36 @@ button {
 
     border-radius: 0.25rem;
     border-width: 1px;
-    border-color: transparent;
+    border-style: solid;
+    border-color: var(--color-border, transparent);
+
+    background: var(--color-bg);
+    color: var(--color-fg);
 
     font-size: 0.875rem;
     font-weight: 500;
     line-height: 1.25rem;
     white-space: nowrap;
 
-    background: light-dark(black, white);
-    color: light-dark(white, black);
-
     user-select: none;
     cursor: pointer;
 }
+
+button:hover:not(:disabled) {
+    background: var(--color-bg-hover, var(--color-bg));
+}
+
+button:focus-visible {
+    outline: light-dark(black, white) solid 2px;
+    outline-offset: 2px;
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Size */
 
 button.size-small {
     height: 1.5rem;
@@ -57,16 +76,57 @@ button.size-large {
     padding-inline: 1.66rem;
 }
 
-button:hover:not(:disabled) {
-    background: color-mix(in srgb, light-dark(black, white) 90%, transparent);
+/* Variant */
+
+button.variant-solid {
+    --color-bg: light-dark(black, white);
+    --color-bg-hover: color-mix(in srgb, light-dark(black, white) 90%, transparent);
+    --color-border: transparent;
+
+    --color-fg: light-dark(white, black);
 }
 
-button:focus-visible {
-    outline: light-dark(black, white) solid 2px;
-    outline-offset: 2px;
+button.variant-subtle {
+    --color-bg: light-dark(lightgray, darkgray);
+    --color-bg-hover: color-mix(in srgb, light-dark(lightgray, darkgray) 90%, transparent);
+    --color-border: transparent;
+
+    --color-fg: light-dark(black, white);
 }
 
-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+button.variant-outline {
+    --color-bg: transparent;
+    --color-bg-hover: color-mix(in srgb, light-dark(lightgray, darkgray) 90%, transparent);
+    --color-border: light-dark(lightgray, darkgray);
+
+    --color-fg: light-dark(black, white);
+}
+
+button.variant-ghost {
+    --color-bg: transparent;
+    --color-bg-hover: color-mix(in srgb, light-dark(lightgray, darkgray) 90%, transparent);
+    --color-border: transparent;
+
+    --color-fg: light-dark(black, white);
+}
+
+button.variant-plain {
+    --color-bg: transparent;
+    --color-bg-hover: transparent;
+    --color-border: transparent;
+
+    --color-fg: light-dark(black, white);
+}
+
+/* Animation */
+
+button {
+    transition-duration: 200ms;
+    transition-property: color, background, border-color, outline, outline-offset;
+}
+
+@media screen and (prefers-reduced-motion: reduce), (update: slow) {
+    button {
+        transition-duration: 0s;
+    }
 }
