@@ -57,7 +57,7 @@ button.size-large {
     padding-inline: 1.66rem;
 }
 
-button:hover:not:disabled {
+button:hover:not(:disabled) {
     background: color-mix(in srgb, light-dark(black, white) 90%, transparent);
 }
 

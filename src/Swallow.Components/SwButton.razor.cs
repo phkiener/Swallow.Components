@@ -8,8 +8,11 @@ public sealed partial class SwButton : ComponentBase
     private string buttonType => OnClick.HasDelegate ? "button" : "submit";
     private string buttonClass => string.Join(" ", EnumerateClasses());
 
+    [CascadingParameter]
+    public SwButtonGroup? ButtonGroup { get; set; }
+
     [Parameter]
-    public ButtonSize Size { get; set; } = ButtonSize.Normal;
+    public ButtonSize? Size { get; set; }
 
     [Parameter]
     [EditorRequired]
@@ -23,7 +26,8 @@ public sealed partial class SwButton : ComponentBase
 
     private IEnumerable<string?> EnumerateClasses()
     {
-        yield return Size switch
+        var buttonSize = Size ?? ButtonGroup?.Size ?? ButtonSize.Normal;
+        yield return buttonSize switch
         {
             ButtonSize.Small => "size-small",
             ButtonSize.Smaller => "size-smaller",
