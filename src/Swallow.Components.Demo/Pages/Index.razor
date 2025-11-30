@@ -40,3 +40,10 @@ This is the main page.
 <p>
     <SwIcon Icon="IconType.AirVent" />
 </p>
+
+<p style="display: flex; flex-direction: row; gap: 1ch; align-items: center">
+    @foreach (var size in Enum.GetValues<ButtonSize>())
+    {
+        <SwIconButton Size="@size" Icon="IconType.Anvil" />
+    }
+</p>
