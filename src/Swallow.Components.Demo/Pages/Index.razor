@@ -1,5 +1,6 @@
 @page "/"
 @using Swallow.Components.Buttons
+@using Swallow.Components.Forms
 
 This is the main page.
 
@@ -47,3 +48,16 @@ This is the main page.
         <SwIconButton Size="@size" Icon="IconType.Anvil" />
     }
 </p>
+
+<p style="display: flex; flex-direction: row; gap: 1ch; align-items: center">
+    <SwInputText @bind-Value="currentInput" />
+    <div>
+        @currentInput
+    </div>
+</p>
+
+@code {
+
+    private string? currentInput { get; set; }
+
+}
