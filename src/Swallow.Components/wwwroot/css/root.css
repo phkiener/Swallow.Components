@@ -1,0 +1,6 @@
+@layer reset, component;
+
+@import "theme.css";
+@import "reset.css" layer(reset);
+@import "components/button.css" layer(component);
+@import "components/input.css" layer(component);
