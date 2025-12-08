@@ -1,29 +1,25 @@
 const supportedAttributes = ["for"];
 
-(() => {
-    const elegibleElements = document.querySelectorAll("[idref]");
+(() => processSubtree(document.body))();
 
-    for (const elegibleElement of [...elegibleElements]) {
+function processSubtree(element) {
+    for (const elegibleElement of [...element.querySelectorAll("[idref]")]) {
         for (const attribute of supportedAttributes) {
-            processElement(elegibleElement, attribute);
+            const attributeValue = element.getAttribute(attribute);
+            if (attributeValue == null) {
+                return;
+            }
+
+            const target = findTargetElement(element, attributeValue);
+            if (target.id == null || target.id === "") {
+                target.id = "genid-" + crypto.randomUUID();
+            }
+
+            element.setAttribute(attribute, target.id);
         }
 
         elegibleElement.removeAttribute("idref");
     }
-})();
-
-function processElement(element, attribute) {
-    const attributeValue = element.getAttribute(attribute);
-    if (attributeValue == null) {
-        return;
-    }
-
-    const target = findTargetElement(element, attributeValue);
-    if (target.id == null || target.id === "") {
-        target.id = "genid-" + crypto.randomUUID();
-    }
-
-    element.setAttribute(attribute, target.id);
 }
 
 function findTargetElement(element, selector) {

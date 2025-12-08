@@ -1,6 +1,19 @@
 @page "/relref"
 
-<script src="/_content/Swallow.Components/js/relative-idref.js" type="module"></script>
+<SwallowComponentsSetup />
 
-<label for="next input" idref>Blablabla</label>
-<input name="name" >
+@if (showInput)
+{
+    <label for="next input" idref>Blablabla</label>
+    <input name="name" @bind="@text">
+}
+
+<p>@text</p>
+<p><button type="button" @onclick="@(() => showInput = !showInput)">Toggle</button></p>
+
+@code {
+
+    private string? text;
+    private bool showInput;
+
+}
