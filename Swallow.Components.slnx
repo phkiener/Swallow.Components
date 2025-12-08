@@ -3,6 +3,7 @@
     <File Path=".editorconfig" />
     <File Path=".gitattributes" />
     <File Path=".gitignore" />
+    <File Path="ARCHITECTURE.md" />
     <File Path="global.json" />
     <File Path="LICENSE.txt" />
     <File Path="NuGet.config" />
