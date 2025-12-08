@@ -1,0 +1,17 @@
+:root {
+    --color-black: #000000;
+    --color-gray-dark: darkgray;
+    --color-gray-light: lightgray;
+    --color-white: #FFFFFF;
+    --color-transparent: transparent;
+}
+
+:root {
+    --size-radius-0: 0;
+    --size-radius-0-5x: 0.25rem;
+    --size-radius-1x: 0.375rem;
+    --size-radius-1-5x: 0.5rem;
+    --size-radius-2x: 0.75rem;
+    --size-radius-4x: 1rem;
+    --size-radius-8x: 9999px;
+}

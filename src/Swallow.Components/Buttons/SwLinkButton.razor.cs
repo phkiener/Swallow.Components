@@ -31,38 +31,40 @@ public sealed partial class SwLinkButton : ComponentBase
 
     private IEnumerable<string?> EnumerateClasses()
     {
+        yield return "sw-button";
+
         var buttonSize = Size ?? ButtonGroup?.Size ?? ButtonSize.Normal;
         yield return buttonSize switch
         {
-            ButtonSize.Small => "size-small",
-            ButtonSize.Smaller => "size-smaller",
-            ButtonSize.Normal => "size-normal",
-            ButtonSize.Larger => "size-larger",
-            ButtonSize.Large => "size-large",
+            ButtonSize.Small => "sw-button-size-small",
+            ButtonSize.Smaller => "sw-button-size-smaller",
+            ButtonSize.Normal => "sw-button-size-normal",
+            ButtonSize.Larger => "sw-button-size-larger",
+            ButtonSize.Large => "sw-button-size-large",
             _ => null
         };
 
         var buttonVariant = Variant ?? ButtonGroup?.Variant ?? ButtonVariant.Subtle;
         yield return buttonVariant switch
         {
-            ButtonVariant.Solid => "variant-solid",
-            ButtonVariant.Subtle => "variant-subtle",
-            ButtonVariant.Outline => "variant-outline",
-            ButtonVariant.Ghost => "variant-ghost",
-            ButtonVariant.Plain => "variant-plain",
+            ButtonVariant.Solid => "sw-button-variant-solid",
+            ButtonVariant.Subtle => "sw-button-variant-subtle",
+            ButtonVariant.Outline => "sw-button-variant-outline",
+            ButtonVariant.Ghost => "sw-button-variant-ghost",
+            ButtonVariant.Plain => "sw-button-variant-plain",
             _ => null
         };
 
         var buttonRounding = Rounding ?? ButtonGroup?.Rounding ?? ButtonRounding.Normal;
         yield return buttonRounding switch
         {
-            ButtonRounding.None => "rounding-none",
-            ButtonRounding.Small => "rounding-small",
-            ButtonRounding.Normal => "rounding-normal",
-            ButtonRounding.Large => "rounding-large",
-            ButtonRounding.Extra => "rounding-extra",
-            ButtonRounding.Half => "rounding-half",
-            ButtonRounding.Full => "rounding-full",
+            ButtonRounding.None => "sw-button-rounding-none",
+            ButtonRounding.Small => "sw-button-rounding-small",
+            ButtonRounding.Normal => "sw-button-rounding-normal",
+            ButtonRounding.Large => "sw-button-rounding-large",
+            ButtonRounding.Extra => "sw-button-rounding-extra",
+            ButtonRounding.Half => "sw-button-rounding-half",
+            ButtonRounding.Full => "sw-button-rounding-full",
             _ => null
         };
 
