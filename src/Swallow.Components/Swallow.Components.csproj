@@ -14,5 +14,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Icons/**/*.svg" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="wwwroot\js\relative-idref.js" />
+  </ItemGroup>
 
 </Project>
