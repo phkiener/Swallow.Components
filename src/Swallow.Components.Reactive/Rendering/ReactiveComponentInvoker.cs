@@ -1,13 +1,18 @@
 using System.Net.Mime;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Swallow.Components.Reactive.EventHandlers;
+using Swallow.Components.Reactive.State;
 
 namespace Swallow.Components.Reactive.Framework;
 
 internal sealed class ReactiveComponentInvoker(
     ReactiveComponentRenderer renderer,
+    ComponentStatePersistenceManager stateManager,
+    ComponentStateStore store,
     HandlerRegistration handlers,
     ILogger<ReactiveComponentInvoker> logger)
 {
@@ -21,11 +26,15 @@ internal sealed class ReactiveComponentInvoker(
             var form = await httpContext.Request.ReadFormAsync(httpContext.RequestAborted);
             dispatchedEvent = form["_srx-event"];
             triggeringElementPath = form["_srx-path"];
+
+            store.Initialize(form);
         }
 
         await using var writer = new StringWriter();
         await renderer.Dispatcher.InvokeAsync(async () =>
         {
+            await stateManager.RestoreStateAsync(store, RestoreContext.LastSnapshot);
+
             await renderer.RenderFragmentAsync(componentType).WaitAsync(httpContext.RequestAborted);
             renderer.DiscoverEventHandlers(handlers);
 
@@ -48,6 +57,8 @@ internal sealed class ReactiveComponentInvoker(
                     await dispatchOperation.WaitAsync(httpContext.RequestAborted);
                 }
             }
+
+            await stateManager.PersistStateAsync(store, renderer);
 
             httpContext.RequestAborted.ThrowIfCancellationRequested();
             renderer.DiscoverEventHandlers(handlers);

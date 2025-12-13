@@ -1,0 +1,32 @@
+@implements IDisposable
+
+@foreach (var (key, value) in persistedState)
+{
+    <meta itemprop="_srx-state-@key" content="@Convert.ToBase64String(value)" >
+}
+
+@code {
+
+    private IReadOnlyDictionary<string, byte[]> persistedState = new Dictionary<string, byte[]>();
+
+    [Inject]
+    internal ComponentStateStore Store { get; set; } = null!;
+
+    protected override void OnInitialized()
+    {
+        Store.OnStatePersisted += ReloadState;
+    }
+
+    private void ReloadState(object? sender, EventArgs e)
+    {
+        persistedState = Store.CurrentState;
+
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        Store.OnStatePersisted -= ReloadState;
+    }
+
+}

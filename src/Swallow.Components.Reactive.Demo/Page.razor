@@ -5,6 +5,17 @@
 <h1 @onclick="@(() => Console.WriteLine("Boop"))" @oncontextmenu="@(() => Console.WriteLine("Beep"))">Hello World</h1>
 
 <div>
-    <button type="button" @onclick="@(() => Console.WriteLine("+"))">Increase</button>
-    <button type="button" @onclick="@(() => Console.WriteLine("-"))">Decrease</button>
+    <button type="button" @onclick="@(() => Counter += 1)">Increase</button>
+    <button type="button" @onclick="@(() => Counter -= 1)">Decrease</button>
 </div>
+
+<div>
+    Counter is @Counter
+</div>
+
+@code {
+
+    [PersistentState]
+    public int Counter { get; set; }
+
+}

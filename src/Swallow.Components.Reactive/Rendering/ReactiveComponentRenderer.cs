@@ -12,6 +12,8 @@ internal class ReactiveComponentRenderer(IServiceProvider serviceProvider, ILogg
     private int? rootComponentId;
     private int? fragmentComponentId;
 
+    protected override RendererInfo RendererInfo => new("static-interactive", true);
+
     protected override IComponentRenderMode GetComponentRenderMode(IComponent component)
     {
         return RenderMode.StaticReactive;
@@ -62,6 +64,4 @@ internal class ReactiveComponentRenderer(IServiceProvider serviceProvider, ILogg
 
         WriteComponentHtml(rootComponentId.Value, output);
     }
-
-    protected override RendererInfo RendererInfo => new("static-interactive", true);
 }

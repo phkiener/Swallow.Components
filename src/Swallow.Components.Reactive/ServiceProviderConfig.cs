@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Swallow.Components.Reactive.EventHandlers;
 using Swallow.Components.Reactive.Framework;
 using Swallow.Components.Reactive.Routing;
+using Swallow.Components.Reactive.State;
 
 namespace Swallow.Components.Reactive;
 
@@ -14,13 +15,12 @@ public static class ServiceProviderConfig
         services.AddScoped<HandlerRegistration>();
         services.AddScoped<ReactiveComponentInvoker>();
         services.AddScoped<ReactiveComponentRenderer>();
+        services.AddScoped<ComponentStateStore>();
     }
 
     public static IRazorComponentsBuilder AddReactiveComponents(this IRazorComponentsBuilder razorComponentsBuilder)
     {
-        razorComponentsBuilder.Services.AddScoped<HandlerRegistration>();
-        razorComponentsBuilder.Services.AddScoped<ReactiveComponentInvoker>();
-        razorComponentsBuilder.Services.AddScoped<ReactiveComponentRenderer>();
+        razorComponentsBuilder.Services.AddReactiveComponents();
 
         return razorComponentsBuilder;
     }
