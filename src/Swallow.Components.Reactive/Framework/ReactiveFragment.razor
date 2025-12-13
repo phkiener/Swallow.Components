@@ -1,0 +1,22 @@
+@using Microsoft.AspNetCore.Components.Web
+@using Swallow.Components.Reactive.EventHandlers
+
+<!DOCTYPE html>
+<head lang="en">
+    <title></title>
+
+    <!-- STATE -->
+    <EventHandlerMap />
+    <HeadOutlet />
+</head>
+<body>
+    <DynamicComponent Type="ComponentType" />
+</body>
+
+@code {
+
+    [Parameter]
+    [EditorRequired]
+    public required Type ComponentType { get; set; }
+
+}

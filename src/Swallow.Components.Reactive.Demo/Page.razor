@@ -1,0 +1,10 @@
+@using Microsoft.AspNetCore.Components.Web
+@page "/"
+@attribute [ReactiveComponent]
+
+<h1 @onclick="@(() => Console.WriteLine("Boop"))" @oncontextmenu="@(() => Console.WriteLine("Beep"))">Hello World</h1>
+
+<div>
+    <button type="button" @onclick="@(() => Console.WriteLine("+"))">Increase</button>
+    <button type="button" @onclick="@(() => Console.WriteLine("-"))">Decrease</button>
+</div>
