@@ -1,3 +1,4 @@
+using System.IO.Compression;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Http;
 
@@ -14,14 +15,13 @@ internal sealed class ComponentStateStore : IPersistentComponentStateStore
         foreach (var (key, value) in form.Where(static kvp => kvp.Key.StartsWith("_srx-state-")))
         {
             var storeKey = key.TrimStart("_srx-state-").ToString();
-            var storeValue = Convert.FromBase64String(value.ToString());
+            var storeValue = DeserializeBrotli(value.ToString());
 
             currentState[storeKey] = storeValue;
         }
     }
 
-    public event EventHandler? OnStatePersisted;
-    public IReadOnlyDictionary<string, byte[]> CurrentState => currentState;
+    public event EventHandler<IReadOnlyDictionary<string, string>>? OnStatePersisted;
 
     public Task<IDictionary<string, byte[]>> GetPersistedStateAsync()
     {
@@ -31,12 +31,37 @@ internal sealed class ComponentStateStore : IPersistentComponentStateStore
     public Task PersistStateAsync(IReadOnlyDictionary<string, byte[]> state)
     {
         currentState.Clear();
+
+        var serializedState = new Dictionary<string, string>();
         foreach (var (key, value) in state)
         {
             currentState[key] = value;
+            serializedState[key] = SerializeBrotli(value);
         }
 
-        OnStatePersisted?.Invoke(this, EventArgs.Empty);
+        OnStatePersisted?.Invoke(this, serializedState);
         return Task.CompletedTask;
+    }
+
+    private static string SerializeBrotli(byte[] bytes)
+    {
+        using var memoryStream = new MemoryStream();
+        using var compressingStream = new BrotliStream(memoryStream, CompressionMode.Compress);
+        compressingStream.Write(bytes);
+        compressingStream.Flush();
+
+        return Convert.ToBase64String(memoryStream.ToArray());
+    }
+
+    private static byte[] DeserializeBrotli(string bytes)
+    {
+        using var memoryStream = new MemoryStream();
+        using var decompressingStream = new BrotliStream(memoryStream, CompressionMode.Decompress);
+
+        var decodedBytes = Convert.FromBase64String(bytes);
+        decompressingStream.Write(decodedBytes);
+        decompressingStream.Flush();
+
+        return memoryStream.ToArray();
     }
 }

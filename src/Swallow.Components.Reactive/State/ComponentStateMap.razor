@@ -2,12 +2,12 @@
 
 @foreach (var (key, value) in persistedState)
 {
-    <meta itemprop="_srx-state-@key" content="@Convert.ToBase64String(value)" >
+    <meta itemprop="state" data-key="@key" data-value="@value">
 }
 
 @code {
 
-    private IReadOnlyDictionary<string, byte[]> persistedState = new Dictionary<string, byte[]>();
+    private IReadOnlyDictionary<string, string> persistedState = new Dictionary<string, string>();
 
     [Inject]
     internal ComponentStateStore Store { get; set; } = null!;
@@ -17,9 +17,9 @@
         Store.OnStatePersisted += ReloadState;
     }
 
-    private void ReloadState(object? sender, EventArgs e)
+    private void ReloadState(object? sender, IReadOnlyDictionary<string, string> serializedState)
     {
-        persistedState = Store.CurrentState;
+        persistedState = serializedState;
 
         StateHasChanged();
     }
