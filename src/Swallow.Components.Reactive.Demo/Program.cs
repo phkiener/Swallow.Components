@@ -1,9 +1,14 @@
+using Microsoft.AspNetCore.Components.Web;
 using Swallow.Components.Reactive;
 using Swallow.Components.Reactive.Demo;
+using Swallow.Components.Reactive.Framework;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
-    .AddReactiveComponents();
+    .AddReactiveComponents()
+    .RegisterPersistentService<ExampleService>(RenderMode.StaticReactive);
+
+builder.Services.AddScoped<ExampleService>();
 
 var app = builder.Build();
 app.UseAntiforgery();

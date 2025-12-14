@@ -1,0 +1,42 @@
+@using Microsoft.AspNetCore.Components.Web
+@inject PersistentComponentState State
+@implements IDisposable
+
+<span @onclick="@OnParametersSet">@Tag</span>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public required string Name { get; set; }
+
+    private string? Tag { get; set; }
+    private IDisposable? persistSubscription;
+
+    protected override void OnInitialized()
+    {
+        if (State.TryTakeFromJson<string>($"schnitzel-{Name}", out var tag))
+        {
+            Tag = tag;
+        }
+
+        persistSubscription = State.RegisterOnPersisting(Persist);
+    }
+
+    private Task Persist()
+    {
+        State.PersistAsJson($"schnitzel-{Name}", Tag);
+
+        return Task.CompletedTask;
+    }
+
+    protected override void OnParametersSet()
+    {
+        Tag = $"{Name}-{DateTime.UtcNow.Ticks}";
+    }
+
+    public void Dispose()
+    {
+        persistSubscription?.Dispose();
+    }
+
+}

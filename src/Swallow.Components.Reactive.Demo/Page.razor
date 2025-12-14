@@ -1,6 +1,7 @@
 @using Microsoft.AspNetCore.Components.Web
 @page "/"
 @attribute [ReactiveComponent]
+@inject ExampleService Example
 
 <h1 @onclick="@(() => Console.WriteLine("Boop"))" @oncontextmenu="@(() => Console.WriteLine("Beep"))">Hello World</h1>
 
@@ -11,12 +12,16 @@
 
 <div>
     Counter is @Counter
+    Name is @Example.Name
 </div>
 
 <div>
-    <!-- i need the key... that's annoying -->
-    <Subcomponent Name="Foo" @key="@("foo")"/>
-    <Subcomponent Name="Bar" @key="@("bar")"/>
+    <Subcomponent Name="Foo" />
+    <Subcomponent Name="Bar" />
+</div>
+<div>
+    <ManuallyPersistedSubcomponent Name="dimdimdam" />
+    <ManuallyPersistedSubcomponent Name="damdidam" />
 </div>
 
 @code {

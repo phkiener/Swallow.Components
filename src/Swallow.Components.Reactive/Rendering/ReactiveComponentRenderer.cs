@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Logging;
 using Swallow.Components.Reactive.EventHandlers;
+using Swallow.Components.Reactive.State;
 
 namespace Swallow.Components.Reactive.Framework;
 
@@ -31,7 +33,7 @@ internal class ReactiveComponentRenderer(IServiceProvider serviceProvider, ILogg
             fragmentComponentId = componentId;
         }
 
-        return base.CreateComponentState(componentId, component, parentComponentState);
+        return new ComponentStateWithKeyOverride(this, componentId, component, parentComponentState);
     }
 
     public Task RenderFragmentAsync(Type renderedComponent)
@@ -63,5 +65,14 @@ internal class ReactiveComponentRenderer(IServiceProvider serviceProvider, ILogg
         }
 
         WriteComponentHtml(rootComponentId.Value, output);
+    }
+
+    private sealed class ComponentStateWithKeyOverride(Renderer renderer, int componentId, IComponent component, ComponentState? parentComponentState)
+        : ComponentState(renderer, componentId, component, parentComponentState)
+    {
+        protected override object? GetComponentKey()
+        {
+            return Component is IHaveComponentKey key ? key.Key : base.GetComponentKey();
+        }
     }
 }
