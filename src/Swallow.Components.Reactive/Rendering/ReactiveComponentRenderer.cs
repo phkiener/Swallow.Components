@@ -1,8 +1,14 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Swallow.Components.Reactive.EventHandlers;
 using Swallow.Components.Reactive.State;
@@ -11,15 +17,16 @@ namespace Swallow.Components.Reactive.Framework;
 
 internal class ReactiveComponentRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory) : StaticHtmlRenderer(serviceProvider, loggerFactory)
 {
+    private readonly IServiceProvider serviceProvider = serviceProvider;
+    private ResourceAssetCollection? resourceCollection;
     private int? rootComponentId;
     private int? fragmentComponentId;
 
     protected override RendererInfo RendererInfo => new("static-interactive", true);
 
-    protected override IComponentRenderMode GetComponentRenderMode(IComponent component)
-    {
-        return RenderMode.StaticReactive;
-    }
+    protected override IComponentRenderMode GetComponentRenderMode(IComponent component) => RenderMode.StaticReactive;
+
+    protected override ResourceAssetCollection Assets => resourceCollection ?? base.Assets;
 
     protected override ComponentState CreateComponentState(int componentId, IComponent component, ComponentState? parentComponentState)
     {
@@ -36,7 +43,45 @@ internal class ReactiveComponentRenderer(IServiceProvider serviceProvider, ILogg
         return new ComponentStateWithKeyOverride(this, componentId, component, parentComponentState);
     }
 
-    public Task RenderFragmentAsync(Type renderedComponent)
+    public async Task InitializeComponentServicesAsync(HttpContext context, ComponentStateStore store)
+    {
+        var navigationManager = serviceProvider.GetService<NavigationManager>();
+        if (navigationManager is IHostEnvironmentNavigationManager hostEnvironmentNavigationManager)
+        {
+            var referrer = context.Request.GetTypedHeaders().Referer ?? throw new InvalidOperationException("Missing referer header; this endpoint should not be invoked directly.");
+            var baseUri = UriHelper.BuildAbsolute(referrer.Scheme, new HostString(referrer.Host, referrer.Port), context.Request.PathBase);
+
+            hostEnvironmentNavigationManager.Initialize(baseUri, referrer.AbsoluteUri);
+        }
+
+        var authenticationStateProvider = serviceProvider.GetService<AuthenticationStateProvider>();
+        if (authenticationStateProvider is IHostEnvironmentAuthenticationStateProvider hostEnvironmentAuthenticationStateProvider)
+        {
+            var authenticationState = new AuthenticationState(context.User);
+            hostEnvironmentAuthenticationStateProvider.SetAuthenticationState(Task.FromResult(authenticationState));
+        }
+
+        if (authenticationStateProvider is not null)
+        {
+            var listeners = serviceProvider.GetServices<IHostEnvironmentAuthenticationStateProvider>();
+            var authenticationState = authenticationStateProvider.GetAuthenticationStateAsync();
+            foreach (var listener in listeners)
+            {
+                listener.SetAuthenticationState(authenticationState);
+            }
+        }
+
+        resourceCollection = context.GetEndpoint()?.Metadata.GetMetadata<ResourceAssetCollection>();
+
+        var stateManager = serviceProvider.GetService<ComponentStatePersistenceManager>();
+        if (stateManager is not null)
+        {
+            stateManager.SetPlatformRenderMode(RenderMode.StaticReactive);
+            await stateManager.RestoreStateAsync(store, RestoreContext.LastSnapshot);
+        }
+    }
+
+    public Task RenderReactiveFragmentAsync(Type renderedComponent)
     {
         var fragmentParameters = new Dictionary<string, object?>
         {
@@ -54,16 +99,18 @@ internal class ReactiveComponentRenderer(IServiceProvider serviceProvider, ILogg
             return;
         }
 
+        ProcessPendingRender();
         registration.DiscoverEventDescriptors(fragmentComponentId.Value, GetCurrentRenderTreeFrames);
     }
 
-    public void RenderHtml(TextWriter output)
+    public void WriteHtmlTo(TextWriter output)
     {
         if (rootComponentId is null)
         {
             return;
         }
 
+        ProcessPendingRender();
         WriteComponentHtml(rootComponentId.Value, output);
     }
 

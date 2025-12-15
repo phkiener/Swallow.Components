@@ -31,11 +31,14 @@ public static class ServiceProviderConfig
         var dataSource = endpoints.DataSources.OfType<ReactiveComponentsEndpointDataSource>().FirstOrDefault();
         if (dataSource is null)
         {
-            dataSource = ActivatorUtilities.CreateInstance<ReactiveComponentsEndpointDataSource>(endpoints.ServiceProvider);
+            dataSource = ActivatorUtilities.CreateInstance<ReactiveComponentsEndpointDataSource>(endpoints.ServiceProvider, endpoints);
             endpoints.DataSources.Add(dataSource);
         }
 
         var initialAssemblies = new[] { Assembly.GetEntryAssembly(), Assembly.GetCallingAssembly() };
-        return dataSource.ConventionBuilder.AddAdditionalAssemblies(initialAssemblies.OfType<Assembly>());
+
+        return dataSource.ConventionBuilder
+            .WithStaticAssets()
+            .AddAdditionalAssemblies(initialAssemblies.OfType<Assembly>());
     }
 }

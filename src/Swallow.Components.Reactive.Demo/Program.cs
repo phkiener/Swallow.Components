@@ -12,8 +12,10 @@ builder.Services.AddScoped<ExampleService>();
 
 var app = builder.Build();
 
-app.UseAntiforgery();
+app.UsePathBase("/foo");
+app.UseRouting();
 app.MapStaticAssets();
+app.UseAntiforgery();
 app.MapRazorComponents<Root>();
 app.MapReactiveComponents();
 

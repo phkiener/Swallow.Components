@@ -2,19 +2,29 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Swallow.Components.Reactive.Framework;
 
 namespace Swallow.Components.Reactive.Routing;
 
+internal sealed class ReactiveComponentEndpointOptions
+{
+    public string? StaticAssetManifestPath { get; set; }
+}
+
 public sealed class ReactiveComponentsEndpointDataSource : EndpointDataSource
 {
     private readonly IServiceProvider serviceProvider;
+    private readonly ILogger<ReactiveComponentsEndpointDataSource> logger;
+    private readonly IEndpointRouteBuilder endpointRouteBuilder;
+    private readonly ReactiveComponentEndpointOptions endpointOptions = new();
     private readonly Lock lockObject = new();
     private readonly HashSet<Assembly> includedAssemblies = [];
     private readonly List<Action<EndpointBuilder>> conventions = [];
@@ -26,12 +36,18 @@ public sealed class ReactiveComponentsEndpointDataSource : EndpointDataSource
 
     public ReactiveComponentsEndpointConventionBuilder ConventionBuilder { get; }
 
-    public ReactiveComponentsEndpointDataSource(IServiceProvider serviceProvider)
+    public ReactiveComponentsEndpointDataSource(
+        IServiceProvider serviceProvider,
+        ILogger<ReactiveComponentsEndpointDataSource> logger,
+        IEndpointRouteBuilder endpointRouteBuilder)
     {
         this.serviceProvider = serviceProvider;
+        this.logger = logger;
+        this.endpointRouteBuilder = endpointRouteBuilder;
 
         ConventionBuilder = new ReactiveComponentsEndpointConventionBuilder(
             lockObject: lockObject,
+            endpointOptions: endpointOptions,
             includedAssemblies: includedAssemblies,
             conventions: conventions,
             finallyConventions: finallyConventions);
@@ -105,11 +121,12 @@ public sealed class ReactiveComponentsEndpointDataSource : EndpointDataSource
         endpointBuilder.RequestDelegate = result.RequestDelegate;
         endpointBuilder.DisplayName = $"{endpointBuilder.RoutePattern.RawText} ({targetType.Name})";
 
-        endpointBuilder.CopyAttributeMetadata(targetType, static a => a is not ReactiveComponentAttribute);
-        endpointBuilder.AddEmptyRenderMode();
+        endpointBuilder.CopyAttributeMetadata(targetType, static a => a is not ReactiveComponentAttribute and not RouteAttribute);
+        endpointBuilder.ApplyResourceCollectionMetadata(endpointRouteBuilder, endpointOptions.StaticAssetManifestPath, logger);
+
         endpointBuilder.Metadata.Add(new SuppressLinkGenerationMetadata());
         endpointBuilder.Metadata.Add(new RequireAntiforgeryTokenAttribute());
-        endpointBuilder.Metadata.Add(new HttpMethodMetadata([HttpMethods.Get, HttpMethods.Post]));
+        endpointBuilder.Metadata.Add(new HttpMethodMetadata([HttpMethods.Post]));
         endpointBuilder.Metadata.Add(new ComponentTypeMetadata(targetType));
 
         return endpointBuilder;
@@ -132,8 +149,8 @@ public sealed class ReactiveComponentsEndpointDataSource : EndpointDataSource
         var componentType = httpContext.GetEndpoint()?.Metadata.GetMetadata<ComponentTypeMetadata>()?.Type;
         if (componentType is null)
         {
-            httpContext.Response.StatusCode = StatusCodes.Status404NotFound;
-            return Task.CompletedTask;
+            var notFoundResult = TypedResults.NotFound();
+            return notFoundResult.ExecuteAsync(httpContext);
         }
 
         var invoker = httpContext.RequestServices.GetRequiredService<ReactiveComponentInvoker>();

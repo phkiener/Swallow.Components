@@ -9,17 +9,19 @@ namespace Swallow.Components.Reactive.Routing;
 public sealed class ReactiveComponentsEndpointConventionBuilder : IEndpointConventionBuilder
 {
     private readonly Lock lockObject;
+    private readonly ReactiveComponentEndpointOptions endpointOptions;
     private readonly HashSet<Assembly> includedAssemblies;
     private readonly List<Action<EndpointBuilder>> conventions;
     private readonly List<Action<EndpointBuilder>> finallyConventions;
 
-    internal ReactiveComponentsEndpointConventionBuilder(
-        Lock lockObject,
+    internal ReactiveComponentsEndpointConventionBuilder(Lock lockObject,
+        ReactiveComponentEndpointOptions endpointOptions,
         HashSet<Assembly> includedAssemblies,
         List<Action<EndpointBuilder>> conventions,
         List<Action<EndpointBuilder>> finallyConventions)
     {
         this.lockObject = lockObject;
+        this.endpointOptions = endpointOptions;
         this.includedAssemblies = includedAssemblies;
         this.conventions = conventions;
         this.finallyConventions = finallyConventions;
@@ -56,6 +58,16 @@ public sealed class ReactiveComponentsEndpointConventionBuilder : IEndpointConve
             var route = routeBuilder(componentTypeMetadata.Type);
             routeEndpointBuilder.RoutePattern = RoutePatternFactory.Pattern(route);
         }
+    }
+
+    public ReactiveComponentsEndpointConventionBuilder WithStaticAssets(string? manifestPath = null)
+    {
+        lock (lockObject)
+        {
+            endpointOptions.StaticAssetManifestPath = manifestPath;
+        }
+
+        return this;
     }
 
     public void Add(Action<EndpointBuilder> convention)
