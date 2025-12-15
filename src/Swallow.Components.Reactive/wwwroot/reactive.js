@@ -80,7 +80,6 @@
         try {
             const resolvedElement = resolveElement(targetElement, element);
             resolvedElement.setAttribute("_srx-path", element);
-            resolvedElement.setAttribute("_srx-listener", event);
 
             const eventName = event.replace(/^on/, "");
             resolvedElement.addEventListener(eventName, onReactiveElementTriggered);
@@ -112,7 +111,7 @@
 
     function onReactiveElementTriggered(evnt) {
         const container = evnt.currentTarget.closest("[_srx-fragment]");
-        const dispatchInfo = { element: evnt.currentTarget.getAttribute("_srx-path"), event: evnt.currentTarget.getAttribute("_srx-listener") };
+        const dispatchInfo = { element: evnt.currentTarget.getAttribute("_srx-path"), event: "on" + evnt.type };
 
         evnt.preventDefault();
         evnt.stopPropagation();
