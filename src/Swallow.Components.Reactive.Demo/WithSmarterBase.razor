@@ -1,0 +1,15 @@
+@inherits ReactiveComponentBase
+
+<span>I am a smart component :)</span>
+
+@code {
+
+    protected override void OnInitialized(bool firstRender)
+    {
+        if (firstRender)
+        {
+            Console.WriteLine("I am being initialized!");
+        }
+    }
+
+}
