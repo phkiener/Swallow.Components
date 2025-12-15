@@ -39,6 +39,10 @@
             formData.append("_srx-path", triggeringEvent.element);
         }
 
+        for (const stateElement of [...targetElement.querySelectorAll("& > meta[itemprop='state']")]) {
+            formData.append("_srx-state-" + stateElement.getAttribute("data-key"), stateElement.getAttribute("data-value"));
+        }
+
         return { route: route, options: { method: "POST", body: formData }};
     }
 
@@ -50,6 +54,9 @@
 
         [...document.head.querySelectorAll("meta[itemprop='event-handler']")]
             .forEach(meta => registerEventHandler(targetElement, meta.getAttribute("data-element"), meta.getAttribute("data-event")));
+
+        [...document.head.querySelectorAll("meta[itemprop='state']")]
+            .forEach(meta => targetElement.appendChild(meta));
     }
 
     function placeContentIntoFragment(target, content) {
@@ -107,7 +114,9 @@
         const container = evnt.currentTarget.closest("[_srx-fragment]");
         const dispatchInfo = { element: evnt.currentTarget.getAttribute("_srx-path"), event: evnt.currentTarget.getAttribute("_srx-listener") };
 
+        evnt.preventDefault();
+        evnt.stopPropagation();
+
         triggerInteraction(container, dispatchInfo);
     }
-
 })(document.currentScript);

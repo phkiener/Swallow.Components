@@ -14,7 +14,7 @@ internal sealed class ComponentStateStore : IPersistentComponentStateStore
 
         foreach (var (key, value) in form.Where(static kvp => kvp.Key.StartsWith("_srx-state-")))
         {
-            var storeKey = key.TrimStart("_srx-state-").ToString();
+            var storeKey = key["_srx-state-".Length..];
             var storeValue = DeserializeBrotli(value.ToString());
 
             currentState[storeKey] = storeValue;
@@ -55,13 +55,14 @@ internal sealed class ComponentStateStore : IPersistentComponentStateStore
 
     private static byte[] DeserializeBrotli(string bytes)
     {
-        using var memoryStream = new MemoryStream();
-        using var decompressingStream = new BrotliStream(memoryStream, CompressionMode.Decompress);
-
         var decodedBytes = Convert.FromBase64String(bytes);
-        decompressingStream.Write(decodedBytes);
+        using var memoryStream = new MemoryStream(decodedBytes);
+        using var decompressingStream = new BrotliStream(memoryStream, CompressionMode.Decompress);
+        using var outputStream = new MemoryStream();
+
+        decompressingStream.CopyTo(outputStream);
         decompressingStream.Flush();
 
-        return memoryStream.ToArray();
+        return outputStream.ToArray();
     }
 }
