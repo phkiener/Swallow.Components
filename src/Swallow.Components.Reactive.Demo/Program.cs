@@ -11,6 +11,7 @@ builder.Services.AddRazorComponents()
 builder.Services.AddScoped<ExampleService>();
 
 var app = builder.Build();
+
 app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapRazorComponents<Root>();

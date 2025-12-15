@@ -1,4 +1,5 @@
-@using Microsoft.AspNetCore.Components.Forms
+@using Swallow.Components.Reactive.Framework
+
 <!DOCTYPE html>
 <html lang="en-US">
 <head>
@@ -7,14 +8,7 @@
 <body>
 <header>
     <main>
-        <form action="/_framework/reactive/Swallow.Components.Reactive.Demo/Swallow.Components.Reactive.Demo.Page" method="post">
-            <AntiforgeryToken />
-            <input type="text" name="_srx-path" placeholder="path">
-            <input type="text" name="_srx-event" placeholder="event">
-            <input type="text" name="_srx-state-f+ltDoJRKjOV5B7fsP/XFSQoNbXS0+MtHXM/cHhFY4o=" placeholder="state">
-
-            <button type="submit">Render</button>
-        </form>
+        <ReactiveComponentBoundary ComponentType="@typeof(Page)" />
     </main>
 </header>
 </body>

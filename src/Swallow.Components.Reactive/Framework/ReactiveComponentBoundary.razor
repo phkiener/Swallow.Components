@@ -1,0 +1,53 @@
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.Extensions.DependencyInjection
+@using Swallow.Components.Reactive.Routing
+
+<div style="display: contents"
+     _srx-fragment
+     _srx-route="@targetUrl"
+     _srx-antiforgery-name="@antiforgeryToken?.FormFieldName"
+     _srx_antiforgery-token="@antiforgeryToken?.Value">
+
+    <!-- TODO: Allow prerendering -->
+</div>
+<script src="@Assets["_content/Swallow.Components.Reactive/reactive.js"]"></script>
+
+@code {
+    private string? targetUrl;
+    private AntiforgeryRequestToken? antiforgeryToken;
+
+    [Parameter]
+    [EditorRequired]
+    public required Type ComponentType { get; set; }
+
+    [Inject]
+    public required NavigationManager NavigationManager { get; set; }
+
+    [Inject]
+    public required IServiceProvider ServiceProvider { get; set; }
+
+    [Inject]
+    internal ReactiveComponentRouteResolver RouteResolver { get; set; } = null!;
+
+    protected override void OnInitialized()
+    {
+        if (AssignedRenderMode is not null)
+        {
+            throw new InvalidOperationException($"{nameof(ReactiveComponentBoundary)} can only be used while rendering statically.");
+        }
+
+        antiforgeryToken = ServiceProvider.GetService<AntiforgeryStateProvider>()?.GetAntiforgeryToken();
+    }
+
+    protected override void OnParametersSet()
+    {
+        var route = RouteResolver.ResolveRoute(ComponentType) ?? throw NoEndpointFound(ComponentType);
+        targetUrl = NavigationManager.ToAbsoluteUri(route).AbsolutePath;
+    }
+
+    private static Exception NoEndpointFound(Type componentType)
+    {
+        return new ArgumentException($"No route found for {componentType}; check that the type does have the {nameof(ReactiveComponentAttribute)} and {nameof(ServiceProviderConfig.MapReactiveComponents)} has been called.");
+    }
+
+}

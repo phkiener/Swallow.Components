@@ -1,7 +1,7 @@
 @using Microsoft.AspNetCore.Components.Web
 @implements Swallow.Components.Reactive.State.IHaveComponentKey
 
-<span @onclick="@OnParametersSet">@Tag</span>
+<span @onclick="@(() => Tag = $"{Name}-{DateTime.UtcNow.Ticks}")">@Tag</span>
 
 @code {
     [Parameter]
@@ -13,7 +13,7 @@
 
     protected override void OnParametersSet()
     {
-        Tag = $"{Name}-{DateTime.UtcNow.Ticks}";
+        Tag ??= $"{Name}-{DateTime.UtcNow.Ticks}";
     }
 
     public object Key => Name;

@@ -4,26 +4,27 @@ namespace Swallow.Components.Reactive.EventHandlers;
 
 internal readonly record struct ComponentEventDescriptor(ulong EventHandlerId, int ComponentId, string EventName, string ElementPath);
 
-[DebuggerDisplay("<{tagName,nq}>")]
-internal sealed class EventTreeNode(string tag)
+[DebuggerDisplay("<{tagName,nq}> (Component {componentId,nq})")]
+internal sealed class EventTreeNode(string tag, int componentId)
 {
-    private readonly record struct ComponentEventHandler(ulong EventHandlerId, int ComponentId, string EventName);
+    private readonly record struct ComponentEventHandler(ulong EventHandlerId, string EventName);
 
     private readonly string tagName = tag;
+    private readonly int componentId = componentId;
     private readonly List<EventTreeNode> children = [];
     private readonly List<ComponentEventHandler> handlers = [];
 
-    public EventTreeNode AddChild(string tag)
+    public EventTreeNode AddChild(string tag, int containingComponentId)
     {
-        var node = new EventTreeNode(tag);
+        var node = new EventTreeNode(tag, containingComponentId);
         children.Add(node);
 
         return node;
     }
 
-    public void AddHandler(ulong eventHandlerId, int componentId, string eventName)
+    public void AddHandler(ulong eventHandlerId, string eventName)
     {
-        var handler = new ComponentEventHandler(eventHandlerId, componentId, eventName);
+        var handler = new ComponentEventHandler(eventHandlerId, eventName);
         handlers.Add(handler);
     }
 
@@ -34,7 +35,7 @@ internal sealed class EventTreeNode(string tag)
 
     private IEnumerable<ComponentEventDescriptor> EnumerateDescriptors(string prefix)
     {
-        var directDescriptors = handlers.Select(h => new ComponentEventDescriptor(h.EventHandlerId, h.ComponentId, h.EventName, prefix));
+        var directDescriptors = handlers.Select(h => new ComponentEventDescriptor(h.EventHandlerId, componentId, h.EventName, prefix));
         var descendantDescriptors = new List<IEnumerable<ComponentEventDescriptor>>();
 
         foreach (var tagGroup in children.GroupBy(static n => n.tagName))
@@ -51,8 +52,8 @@ internal sealed class EventTreeNode(string tag)
         return directDescriptors.Concat(descendantDescriptors.SelectMany(static descriptors => descriptors));
     }
 
-    public static EventTreeNode CreateRootNode()
+    public static EventTreeNode CreateRootNode(int rootComponentId)
     {
-        return new EventTreeNode(string.Empty);
+        return new EventTreeNode(string.Empty, rootComponentId);
     }
 }

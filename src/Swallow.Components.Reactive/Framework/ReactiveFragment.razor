@@ -1,4 +1,6 @@
+@using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.Components.Web
+@using Microsoft.Extensions.DependencyInjection
 @using Swallow.Components.Reactive.EventHandlers
 @using Swallow.Components.Reactive.State
 
@@ -6,8 +8,14 @@
 <head lang="en">
     <title></title>
 
+    @if (antiforgeryToken is not null)
+    {
+        <meta itemprop="antiforgery" data-name="@antiforgeryToken.FormFieldName" data-token="@antiforgeryToken.Value">
+    }
+
     <ComponentStateMap />
     <EventHandlerMap />
+
     <HeadOutlet />
 </head>
 <body>
@@ -16,8 +24,23 @@
 
 @code {
 
+    private AntiforgeryRequestToken? antiforgeryToken;
+
     [Parameter]
     [EditorRequired]
     public required Type ComponentType { get; set; }
+
+    [Inject]
+    public required IServiceProvider ServiceProvider { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (AssignedRenderMode is not StaticReactiveRenderMode)
+        {
+            throw new InvalidOperationException($"{nameof(ReactiveFragment)} can only be used with static reactive rendering.");
+        }
+
+        antiforgeryToken = ServiceProvider.GetService<AntiforgeryStateProvider>()?.GetAntiforgeryToken();
+    }
 
 }

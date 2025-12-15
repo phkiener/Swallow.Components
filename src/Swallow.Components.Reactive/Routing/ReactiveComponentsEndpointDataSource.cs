@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Http;
@@ -13,6 +14,7 @@ namespace Swallow.Components.Reactive.Routing;
 
 public sealed class ReactiveComponentsEndpointDataSource : EndpointDataSource
 {
+    private readonly IServiceProvider serviceProvider;
     private readonly Lock lockObject = new();
     private readonly HashSet<Assembly> includedAssemblies = [];
     private readonly List<Action<EndpointBuilder>> conventions = [];
@@ -24,8 +26,10 @@ public sealed class ReactiveComponentsEndpointDataSource : EndpointDataSource
 
     public ReactiveComponentsEndpointConventionBuilder ConventionBuilder { get; }
 
-    public ReactiveComponentsEndpointDataSource()
+    public ReactiveComponentsEndpointDataSource(IServiceProvider serviceProvider)
     {
+        this.serviceProvider = serviceProvider;
+
         ConventionBuilder = new ReactiveComponentsEndpointConventionBuilder(
             lockObject: lockObject,
             includedAssemblies: includedAssemblies,
@@ -80,22 +84,33 @@ public sealed class ReactiveComponentsEndpointDataSource : EndpointDataSource
         endpoints = foundEndpoints;
     }
 
-    private static RouteEndpointBuilder BuildEndpoint(Type targetType)
+    private RouteEndpointBuilder BuildEndpoint(Type targetType)
     {
         var routeTemplate = $"_framework/reactive/{targetType.Assembly.GetName().Name}/{targetType.FullName}";
 
         var endpointBuilder = new RouteEndpointBuilder(
-            requestDelegate: RenderReactiveComponent,
+            requestDelegate: null,
             routePattern: RoutePatternFactory.Parse(routeTemplate),
             order: 0);
 
+        var result = RequestDelegateFactory.Create(
+            RenderReactiveComponent,
+            new RequestDelegateFactoryOptions
+            {
+                EndpointBuilder = endpointBuilder,
+                ServiceProvider = serviceProvider,
+                DisableInferBodyFromParameters = true
+            });
+
+        endpointBuilder.RequestDelegate = result.RequestDelegate;
         endpointBuilder.DisplayName = $"{endpointBuilder.RoutePattern.RawText} ({targetType.Name})";
-        endpointBuilder.Metadata.Add(routeTemplate);
+
+        endpointBuilder.CopyAttributeMetadata(targetType, static a => a is not ReactiveComponentAttribute);
+        endpointBuilder.AddEmptyRenderMode();
+        endpointBuilder.Metadata.Add(new SuppressLinkGenerationMetadata());
+        endpointBuilder.Metadata.Add(new RequireAntiforgeryTokenAttribute());
         endpointBuilder.Metadata.Add(new HttpMethodMetadata([HttpMethods.Get, HttpMethods.Post]));
         endpointBuilder.Metadata.Add(new ComponentTypeMetadata(targetType));
-
-        endpointBuilder.AddEmptyRenderMode();
-        endpointBuilder.CopyAttributeMetadata(targetType, static a => a is not ReactiveComponentAttribute);
 
         return endpointBuilder;
     }

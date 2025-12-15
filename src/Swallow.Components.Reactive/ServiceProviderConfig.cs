@@ -16,6 +16,7 @@ public static class ServiceProviderConfig
         services.AddScoped<ReactiveComponentInvoker>();
         services.AddScoped<ReactiveComponentRenderer>();
         services.AddScoped<ComponentStateStore>();
+        services.AddScoped<ReactiveComponentRouteResolver>();
     }
 
     public static IRazorComponentsBuilder AddReactiveComponents(this IRazorComponentsBuilder razorComponentsBuilder)

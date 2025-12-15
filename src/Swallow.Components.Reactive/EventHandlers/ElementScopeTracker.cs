@@ -15,9 +15,9 @@ internal sealed class ElementScopeTracker(EventTreeNode currentNode)
 
     public EventTreeNode Current => openedScopes.LastOrDefault()?.Node ?? currentNode;
 
-    public void OpenScope(string tag, int frameCount)
+    public void OpenScope(string tag, int componentId, int frameCount)
     {
-        var node = Current.AddChild(tag);
+        var node = Current.AddChild(tag, componentId);
         var scope = new Scope(node, frameCount);
 
         openedScopes.Add(scope);

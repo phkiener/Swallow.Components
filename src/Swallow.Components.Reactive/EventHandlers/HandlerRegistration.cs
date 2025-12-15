@@ -21,7 +21,7 @@ internal sealed class HandlerRegistration
     {
         descriptors.Clear();
 
-        var rootNode = EventTreeNode.CreateRootNode();
+        var rootNode = EventTreeNode.CreateRootNode(rootComponentId);
         var queuedComponent = new QueuedComponent(rootComponentId, rootNode);
         WalkComponentFrames(getFrames: getFrames, rootComponent: queuedComponent);
 
@@ -45,21 +45,16 @@ internal sealed class HandlerRegistration
                 if (frame.FrameType is RenderTreeFrameType.Component)
                 {
                     remainingComponents.Enqueue(new QueuedComponent(frame.ComponentId, scopeTracker.Current));
-                    i += frame.ComponentSubtreeLength;
-
-                    scopeTracker.TrackStep(frame.ComponentSubtreeLength);
-
-                    continue;
                 }
 
                 if (frame.FrameType is RenderTreeFrameType.Element)
                 {
-                    scopeTracker.OpenScope(frame.ElementName, frame.ElementSubtreeLength);
+                    scopeTracker.OpenScope(frame.ElementName, item.ComponentId, frame.ElementSubtreeLength);
                 }
 
                 if (frame.FrameType is RenderTreeFrameType.Attribute && frame.AttributeEventHandlerId is not 0)
                 {
-                    scopeTracker.Current.AddHandler(frame.AttributeEventHandlerId, item.ComponentId, frame.AttributeName);
+                    scopeTracker.Current.AddHandler(frame.AttributeEventHandlerId, frame.AttributeName);
                 }
 
                 scopeTracker.TrackStep();
