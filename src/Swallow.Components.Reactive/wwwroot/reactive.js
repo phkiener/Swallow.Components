@@ -72,7 +72,7 @@
             duplicatedScript.textContent = script.textContent;
             duplicatedScript.async = false;
 
-            target.replaceChild(script, duplicatedScript);
+            target.replaceChild(duplicatedScript, script);
         }
     }
 
