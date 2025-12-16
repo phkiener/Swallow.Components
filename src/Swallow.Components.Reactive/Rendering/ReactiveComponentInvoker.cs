@@ -89,8 +89,8 @@ internal sealed class ReactiveComponentInvoker(
 
         store.Initialize(form);
 
-        return form.TryGetValue("_srx-event", out var eventName) && form.TryGetValue("_srx-path", out var elementPath)
-            ? new DispatchedEvent(eventName.ToString(), elementPath.ToString())
+        return form.TryGetValue("_srx-path", out var elementPath) && form.TryGetValue("_srx-event", out var eventName)
+            ? new DispatchedEvent(Element: elementPath.ToString(), Event: eventName.ToString())
             : null;
     }
 
