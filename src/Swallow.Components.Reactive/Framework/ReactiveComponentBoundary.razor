@@ -21,13 +21,13 @@
     public required Type ComponentType { get; set; }
 
     [Inject]
-    public required NavigationManager NavigationManager { get; set; }
+    private NavigationManager NavigationManager { get; set; } = null!;
 
     [Inject]
-    public required IServiceProvider ServiceProvider { get; set; }
+    private IServiceProvider ServiceProvider { get; set; } = null!;
 
     [Inject]
-    internal ReactiveComponentRouteResolver RouteResolver { get; set; } = null!;
+    private ReactiveComponentRouteResolver RouteResolver { get; set; } = null!;
 
     protected override void OnInitialized()
     {
