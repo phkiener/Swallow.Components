@@ -77,7 +77,7 @@ public sealed class ReactiveComponentsEndpointDataSource : EndpointDataSource
         lock (lockObject)
         {
             var types = includedAssemblies.SelectMany(static a => a.GetExportedTypes())
-                .Where(static a => a.GetCustomAttributes<ReactiveComponentAttribute>().Any())
+                .Where(static a => a.GetCustomAttributes<ReactiveComponentAttribute>(inherit: true).Any())
                 .ToList();
 
             foreach (var type in types)
