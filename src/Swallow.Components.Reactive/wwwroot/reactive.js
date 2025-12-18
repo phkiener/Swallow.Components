@@ -7,20 +7,67 @@
     scriptTag.remove();
 
     async function triggerInteraction(targetElement, triggeringEvent) {
-        const request = buildRequest(targetElement, triggeringEvent);
-        const response = await fetch(request.route, request.options);
+        const response = await fetchResponse(targetElement, triggeringEvent);
 
-        switch (response.status) {
-            case 200:
-                const content = await response.text();
-                applyResponse(targetElement, content);
-
-                break;
-
-            default:
-                console.error("srx request returned non-200 status code: " + response.status);
-                break;
+        if (response.redirect) {
+            window.location = decodeURI(response.redirect);
         }
+
+        if (response.content) {
+            applyResponse(targetElement, response.content);
+        }
+    }
+
+    async function fetchResponse(targetElement, triggeringEvent) {
+        const formData = buildForm(targetElement, triggeringEvent);
+        const route = targetElement.getAttribute("_srx-route");
+
+        try {
+            const response = await fetch(route, { method: "POST", body: formData });
+            if (response.headers.get("srx-response") !== "true") {
+                console.error("srx request was not handled by correct endpoint");
+                return { content: undefined, redirect: undefined };
+            }
+
+            switch (response.status) {
+                case 200:
+                    const content = await response.text();
+
+                    return { content: content, redirect: undefined };
+
+                case 204:
+                    const location = response.headers.get("srx-redirect");
+                    return { content: undefined, redirect: location };
+
+                default:
+                    console.error("srx request returned unhandled status code: " + response.status);
+                    return { content: undefined, redirect: undefined };
+            }
+        } catch (error) {
+            console.error("srx request failed: " + error);
+            return { content: undefined, redirect: undefined };
+        }
+    }
+
+    function buildForm(targetElement, triggeringEvent) {
+        const antiforgeryName = targetElement.getAttribute("_srx-antiforgery-name");
+        const antiforgeryToken = targetElement.getAttribute("_srx_antiforgery-token");
+
+        const formData = new FormData();
+        if (antiforgeryName && antiforgeryToken) {
+            formData.append(antiforgeryName, antiforgeryToken);
+        }
+
+        if (triggeringEvent) {
+            formData.append("_srx-event", triggeringEvent.event);
+            formData.append("_srx-path", triggeringEvent.element);
+        }
+
+        for (const stateElement of [...targetElement.querySelectorAll("& > meta[itemprop='state']")]) {
+            formData.append("_srx-state-" + stateElement.getAttribute("data-key"), stateElement.getAttribute("data-value"));
+        }
+
+        return formData;
     }
 
     function buildRequest(targetElement, triggeringEvent) {
@@ -43,7 +90,7 @@
             formData.append("_srx-state-" + stateElement.getAttribute("data-key"), stateElement.getAttribute("data-value"));
         }
 
-        return { route: route, options: { method: "POST", body: formData }};
+        return { route: route, options: { method: "POST", body: formData, redirect: "manual" }};
     }
 
     function applyResponse(targetElement, content) {

@@ -2,6 +2,7 @@ using System.Buffers;
 using System.Net.Mime;
 using System.Reflection;
 using System.Text;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -25,7 +26,10 @@ internal sealed class ReactiveComponentInvoker(
 
     public async Task InvokeAsync(Type componentType, HttpContext context)
     {
+        context.Response.StatusCode = StatusCodes.Status200OK;
+        context.Response.Headers["srx-response"] = "true";
         context.Response.ContentType = MediaTypeNames.Text.Html;
+
         await using var responseWriter = new HttpResponseStreamWriter(
             stream: context.Response.Body,
             encoding: Encoding.UTF8,
@@ -38,24 +42,36 @@ internal sealed class ReactiveComponentInvoker(
             var dispatchedEvent = await ReadFormAsync(context);
             await renderer.InitializeComponentServicesAsync(context, store);
 
-            await renderer.RenderReactiveFragmentAsync(componentType);
-            renderer.DiscoverEventHandlers(handlers);
-
-            if (dispatchedEvent is not null)
+            try
             {
-                var descriptor = handlers.FindDescriptor(elementPath: dispatchedEvent.Element, eventName: dispatchedEvent.Event);
-                if (descriptor is null)
+                await renderer.RenderReactiveFragmentAsync(componentType);
+                renderer.DiscoverEventHandlers(handlers);
+
+                if (dispatchedEvent is not null)
                 {
-                    logger.LogError("Event {EventName} on element {TriggeringElementPath} did not match any event handler.", dispatchedEvent.Event, dispatchedEvent.Element);
+                    var descriptor = handlers.FindDescriptor(elementPath: dispatchedEvent.Element, eventName: dispatchedEvent.Event);
+                    if (descriptor is null)
+                    {
+                        logger.LogError("Event {EventName} on element {TriggeringElementPath} did not match any event handler.", dispatchedEvent.Event, dispatchedEvent.Element);
+                    }
+                    else
+                    {
+                        await renderer.DispatchEventAsync(
+                            eventHandlerId: descriptor.Value.EventHandlerId,
+                            fieldInfo: new EventFieldInfo { ComponentId = descriptor.Value.ComponentId },
+                            eventArgs: EventArgs.Empty,
+                            waitForQuiescence: true);
+                    }
                 }
-                else
-                {
-                    await renderer.DispatchEventAsync(
-                        eventHandlerId: descriptor.Value.EventHandlerId,
-                        fieldInfo: new EventFieldInfo { ComponentId = descriptor.Value.ComponentId },
-                        eventArgs: EventArgs.Empty,
-                        waitForQuiescence: true);
-                }
+            }
+            catch (NavigationException navigation)
+            {
+                context.Response.StatusCode = StatusCodes.Status204NoContent;
+                context.Response.Headers["srx-redirect"] = navigation.Location;
+                context.Response.ContentType = null;
+
+                await context.Response.CompleteAsync();
+                return;
             }
 
             await stateManager.PersistStateAsync(store, renderer);
