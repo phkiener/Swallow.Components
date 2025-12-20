@@ -56,10 +56,17 @@ internal sealed class ReactiveComponentInvoker(
                     }
                     else
                     {
+                        var eventArgs = renderer.ParseEventArgs(descriptor.Value.EventHandlerId, dispatchedEvent.EventBody);
+                        var fieldInfo = new EventFieldInfo { ComponentId = descriptor.Value.ComponentId };
+                        if (eventArgs is ChangeEventArgs { Value: not null and var changedValue })
+                        {
+                            fieldInfo.FieldValue = changedValue;
+                        }
+
                         await renderer.DispatchEventAsync(
                             eventHandlerId: descriptor.Value.EventHandlerId,
-                            fieldInfo: new EventFieldInfo { ComponentId = descriptor.Value.ComponentId },
-                            eventArgs: EventArgs.Empty,
+                            fieldInfo: fieldInfo,
+                            eventArgs: eventArgs,
                             waitForQuiescence: true);
                     }
                 }
@@ -105,10 +112,16 @@ internal sealed class ReactiveComponentInvoker(
 
         store.Initialize(form);
 
-        return form.TryGetValue("_srx-path", out var elementPath) && form.TryGetValue("_srx-event", out var eventName)
-            ? new DispatchedEvent(Element: elementPath.ToString(), Event: eventName.ToString())
-            : null;
+        if (form.TryGetValue("_srx-path", out var path) && form.TryGetValue("_srx-event", out var eventName))
+        {
+            return new DispatchedEvent(
+                Element: path.ToString(),
+                Event: eventName.ToString(),
+                EventBody: form.TryGetValue("_srx-event-body", out var eventBody) ? eventBody.ToString() : null);
+        }
+
+        return null;
     }
 
-    private sealed record DispatchedEvent(string Element, string Event);
+    private sealed record DispatchedEvent(string Element, string Event, string? EventBody);
 }

@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure;
@@ -18,6 +19,13 @@ namespace Swallow.Components.Reactive.Framework;
 
 internal class ReactiveComponentRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory) : StaticHtmlRenderer(serviceProvider, loggerFactory)
 {
+    private static readonly JsonSerializerOptions EventSerializationOptions = new()
+    {
+        MaxDepth = 32,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        PropertyNameCaseInsensitive = true
+    };
+
     private readonly IServiceProvider serviceProvider = serviceProvider;
     private ResourceAssetCollection? resourceCollection;
     private int? rootComponentId;
@@ -102,6 +110,21 @@ internal class ReactiveComponentRenderer(IServiceProvider serviceProvider, ILogg
 
         ProcessPendingRender();
         registration.DiscoverEventDescriptors(fragmentComponentId.Value, GetCurrentRenderTreeFrames);
+    }
+
+    public EventArgs ParseEventArgs(ulong eventHandlerId, string? serializedArgs)
+    {
+        if (serializedArgs is null)
+        {
+            return EventArgs.Empty;
+        }
+
+        var expectedType = GetEventArgsType(eventHandlerId);
+        var eventArgs = (EventArgs?)JsonSerializer.Deserialize(serializedArgs, expectedType, EventSerializationOptions) ?? EventArgs.Empty;
+
+        return eventArgs is ChangeEventArgs { Value: JsonElement jsonValue }
+            ? new ChangeEventArgs { Value = jsonValue.Deserialize<string>() }
+            : eventArgs;
     }
 
     public void WriteHtmlTo(TextWriter output)
