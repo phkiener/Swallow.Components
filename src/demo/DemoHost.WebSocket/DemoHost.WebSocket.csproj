@@ -1,0 +1,5 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+  <ItemGroup>
+    <ProjectReference Include="..\Swallow.Components.Demo\Swallow.Components.Demo.csproj" />
+  </ItemGroup>
+</Project>

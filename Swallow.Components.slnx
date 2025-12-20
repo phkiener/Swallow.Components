@@ -4,11 +4,26 @@
     <File Path=".gitattributes" />
     <File Path=".gitignore" />
     <File Path="ARCHITECTURE.md" />
+    <File Path="Directory.Build.props" />
     <File Path="global.json" />
     <File Path="LICENSE.txt" />
     <File Path="NuGet.config" />
     <File Path="README.md" />
     <File Path="THIRDPARTY.md" />
+  </Folder>
+  <Folder Name="/Components/">
+    <Project Path="src/components/Swallow.Components/Swallow.Components.csproj" />
+  </Folder>
+  <Folder Name="/Demo/">
+    <Project Path="src/demo/DemoHost.Reactive/DemoHost.Reactive.csproj" />
+    <Project Path="src/demo/DemoHost.Static/DemoHost.Static.csproj" />
+    <Project Path="src/demo/DemoHost.WebAssembly/DemoHost.WebAssembly.csproj" />
+    <Project Path="src/demo/DemoHost.WebSocket/DemoHost.WebSocket.csproj" />
+    <Project Path="src/demo/Swallow.Components.Demo/Swallow.Components.Demo.csproj" />
+  </Folder>
+  <Folder Name="/Reactive/">
+    <Project Path="src/reactive/Swallow.Components.Reactive.Abstractions/Swallow.Components.Reactive.Abstractions.csproj" />
+    <Project Path="src/reactive/Swallow.Components.Reactive/Swallow.Components.Reactive.csproj" />
   </Folder>
   <Project Path="src/Swallow.Components.Demo/Swallow.Components.Demo.csproj" />
   <Project Path="src/Swallow.Components.Reactive.Demo/Swallow.Components.Reactive.Demo.csproj" />
