@@ -28,6 +28,10 @@
     console.log("I am a script");
 </script>
 
+<div>
+    <button type="button" @onclick="@(() => throw new NotImplementedException())">Crash and burn :)</button>
+</div>
+
 @code {
 
     [PersistentState]

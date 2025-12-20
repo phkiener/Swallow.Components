@@ -16,6 +16,11 @@
         if (response.content) {
             applyResponse(targetElement, response.content);
         }
+
+        if (response.error) {
+            targetElement.setAttribute("_srx-error", "");
+            targetElement.querySelector("& > .srx-error").innerText = response.error;
+        }
     }
 
     async function fetchResponse(targetElement, triggeringEvent) {
@@ -33,11 +38,15 @@
                 case 200:
                     const content = await response.text();
 
-                    return { content: content, redirect: undefined };
+                    return { content: content, redirect: undefined, error: undefined };
 
                 case 204:
                     const location = response.headers.get("srx-redirect");
-                    return { content: undefined, redirect: location };
+                    return { content: undefined, redirect: location, error: undefined };
+
+                case 500:
+                    const errorMessage = await response.text();
+                    return { content: undefined, redirect: undefined, error: errorMessage };
 
                 default:
                     console.error("srx request returned unhandled status code: " + response.status);
@@ -45,7 +54,7 @@
             }
         } catch (error) {
             console.error("srx request failed: " + error);
-            return { content: undefined, redirect: undefined };
+            return { content: undefined, redirect: undefined, error: undefined };
         }
     }
 
@@ -101,7 +110,7 @@
             duplicatedScript.textContent = script.textContent;
             duplicatedScript.async = false;
 
-            target.replaceChild(duplicatedScript, script);
+            script.replaceWith(duplicatedScript);
         }
     }
 

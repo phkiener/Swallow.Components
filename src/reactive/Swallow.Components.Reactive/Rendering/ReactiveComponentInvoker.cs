@@ -39,51 +39,64 @@ internal sealed class ReactiveComponentInvoker(
 
         await renderer.Dispatcher.InvokeAsync(async () =>
         {
-            var dispatchedEvent = await ReadFormAsync(context);
-            await renderer.InitializeComponentServicesAsync(context, store);
-
             try
             {
-                await renderer.RenderReactiveFragmentAsync(componentType);
-                renderer.DiscoverEventHandlers(handlers);
+                var dispatchedEvent = await ReadFormAsync(context);
+                await renderer.InitializeComponentServicesAsync(context, store);
 
-                if (dispatchedEvent is not null)
+                try
                 {
-                    var descriptor = handlers.FindDescriptor(elementPath: dispatchedEvent.Element, eventName: dispatchedEvent.Event);
-                    if (descriptor is null)
-                    {
-                        logger.LogError("Event {EventName} on element {TriggeringElementPath} did not match any event handler.", dispatchedEvent.Event, dispatchedEvent.Element);
-                    }
-                    else
-                    {
-                        var eventArgs = renderer.ParseEventArgs(descriptor.Value.EventHandlerId, dispatchedEvent.EventBody);
-                        var fieldInfo = new EventFieldInfo { ComponentId = descriptor.Value.ComponentId };
-                        if (eventArgs is ChangeEventArgs { Value: not null and var changedValue })
-                        {
-                            fieldInfo.FieldValue = changedValue;
-                        }
+                    await renderer.RenderReactiveFragmentAsync(componentType);
+                    renderer.DiscoverEventHandlers(handlers);
 
-                        await renderer.DispatchEventAsync(
-                            eventHandlerId: descriptor.Value.EventHandlerId,
-                            fieldInfo: fieldInfo,
-                            eventArgs: eventArgs,
-                            waitForQuiescence: true);
+                    if (dispatchedEvent is not null)
+                    {
+                        var descriptor = handlers.FindDescriptor(elementPath: dispatchedEvent.Element, eventName: dispatchedEvent.Event);
+                        if (descriptor is null)
+                        {
+                            logger.LogError("Event {EventName} on element {TriggeringElementPath} did not match any event handler.",
+                                dispatchedEvent.Event, dispatchedEvent.Element);
+                        }
+                        else
+                        {
+                            var eventArgs = renderer.ParseEventArgs(descriptor.Value.EventHandlerId, dispatchedEvent.EventBody);
+                            var fieldInfo = new EventFieldInfo { ComponentId = descriptor.Value.ComponentId };
+                            if (eventArgs is ChangeEventArgs { Value: not null and var changedValue })
+                            {
+                                fieldInfo.FieldValue = changedValue;
+                            }
+
+                            await renderer.DispatchEventAsync(
+                                eventHandlerId: descriptor.Value.EventHandlerId,
+                                fieldInfo: fieldInfo,
+                                eventArgs: eventArgs,
+                                waitForQuiescence: true);
+                        }
                     }
                 }
-            }
-            catch (NavigationException navigation)
-            {
-                context.Response.StatusCode = StatusCodes.Status204NoContent;
-                context.Response.Headers["srx-redirect"] = navigation.Location;
-                context.Response.ContentType = null;
+                catch (NavigationException navigation)
+                {
+                    context.Response.StatusCode = StatusCodes.Status204NoContent;
+                    context.Response.Headers["srx-redirect"] = navigation.Location;
+                    context.Response.ContentType = null;
 
+                    await context.Response.CompleteAsync();
+                    return;
+                }
+
+                await stateManager.PersistStateAsync(store, renderer);
+
+                renderer.DiscoverEventHandlers(handlers);
+            }
+            catch (Exception exception)
+            {
+                context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                await context.Response.WriteAsync(exception.Message);
                 await context.Response.CompleteAsync();
+
                 return;
             }
 
-            await stateManager.PersistStateAsync(store, renderer);
-
-            renderer.DiscoverEventHandlers(handlers);
             renderer.WriteHtmlTo(responseWriter);
         });
     }

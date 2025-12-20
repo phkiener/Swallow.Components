@@ -11,4 +11,8 @@ public sealed class Routing : AppRoutes
     protected override Assembly HostAssembly { get; } = typeof(App).Assembly;
 }
 
-public sealed partial class App : ComponentBase;
+public sealed partial class App : ComponentBase
+{
+    [SupplyParameterFromQuery]
+    public bool HandleErrors { get; set; } = true;
+}

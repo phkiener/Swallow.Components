@@ -12,7 +12,7 @@
     <HeadOutlet />
 </head>
 <body>
-    <ReactiveComponentBoundary ComponentType="@typeof(Routing)" />
+    <ReactiveComponentBoundary ComponentType="@(HandleErrors ? typeof(ErrorHandledRoutes) : typeof(Routing))"/>
 </body>
 
 </html>
