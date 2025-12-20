@@ -4,7 +4,8 @@ namespace Swallow.Components.Demo.Layout;
 
 public sealed partial class MainLayout : LayoutComponentBase, IDisposable
 {
-    private Theme? currentTheme = null;
+    [PersistentState]
+    public Theme? currentTheme { get; set; } = null;
 
     private string? theme => currentTheme switch
     {
@@ -13,12 +14,9 @@ public sealed partial class MainLayout : LayoutComponentBase, IDisposable
         _ => null
     };
 
-    protected override void OnAfterRender(bool firstRender)
+    protected override void OnInitialized()
     {
-        if (firstRender)
-        {
-            ThemeSelector.OnThemeChosen += OnThemeChosen;
-        }
+        ThemeSelector.OnThemeChosen += OnThemeChosen;
     }
 
     private void OnThemeChosen(object? sender, Theme chosenTheme)
