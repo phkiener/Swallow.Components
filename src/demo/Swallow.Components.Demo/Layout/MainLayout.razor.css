@@ -54,7 +54,7 @@ main {
     }
 }
 
-[theme="dark"] {
+#app[theme="dark"] {
     color-scheme: only dark;
 
     [only-light] {
@@ -62,7 +62,7 @@ main {
     }
 }
 
-[theme="light"] {
+#app[theme="light"] {
     color-scheme: only light;
 
     [only-dark] {
