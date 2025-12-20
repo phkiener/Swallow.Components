@@ -1,0 +1,4 @@
+@foreach (var descriptor in eventDescriptors)
+{
+    <meta itemprop="event-handler" data-element="@descriptor.ElementPath" data-event="@descriptor.EventName">
+}

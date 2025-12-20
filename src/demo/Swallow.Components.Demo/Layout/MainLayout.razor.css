@@ -1,0 +1,71 @@
+#app {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+
+    display: grid;
+    grid-template:
+        "head head" 70px
+        "side main" auto
+        / 200px auto;
+
+    font-family: sans-serif;
+    font-size: 16px;
+
+    background: light-dark(white, black);
+    color: light-dark(black, white);
+
+    transition-duration: 200ms;
+    transition-property: color, background, outline, border;
+
+    color-scheme: light dark;
+
+    @media (prefers-color-scheme: light) {
+        &:not(:has([theme])) [only-dark] {
+            display: none;
+        }
+    }
+
+    @media (prefers-color-scheme: dark) {
+        &:not(:has([theme])) [only-light] {
+            display: none;
+        }
+    }
+}
+
+header {
+    grid-area: head;
+    overflow: hidden;
+}
+
+aside {
+    grid-area: side;
+    overflow: hidden auto;
+}
+
+main {
+    grid-area: main;
+    overflow: auto;
+}
+
+@media screen and (prefers-reduced-motion: reduce), (update: slow) {
+    #app {
+        transition-duration: 0s;
+    }
+}
+
+[theme="dark"] {
+    color-scheme: only dark;
+
+    [only-light] {
+        display: none;
+    }
+}
+
+[theme="light"] {
+    color-scheme: only light;
+
+    [only-dark] {
+        display: none;
+    }
+}

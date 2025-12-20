@@ -1,0 +1,36 @@
+@page "/reactive"
+@inject ServiceWithState Example
+@inject NavigationManager NavigationManager
+
+<h1 @onclick="@(() => Console.WriteLine("Boop"))" @oncontextmenu="@(() => Console.WriteLine("Beep"))">Hello World</h1>
+
+<div>
+    <button type="button" @onclick="@(() => Counter += 1)">Increase</button>
+    <button type="button" @onclick="@(() => Counter -= 1)">Decrease</button>
+    <button type="button" @onclick="@(() => NavigationManager.NavigateTo("/schnitzel"))">Redirect</button>
+</div>
+
+<div>
+    Counter is @Counter
+    Name is @Example.Name
+</div>
+
+<div>
+    <Subcomponent Name="Foo" />
+    <Subcomponent Name="Bar" />
+</div>
+<div>
+    <ManuallyPersistedSubcomponent Name="dimdimdam" />
+    <ManuallyPersistedSubcomponent Name="damdidam" />
+</div>
+
+<script>
+    console.log("I am a script");
+</script>
+
+@code {
+
+    [PersistentState]
+    public int Counter { get; set; }
+
+}

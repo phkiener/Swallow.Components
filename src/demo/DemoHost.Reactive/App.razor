@@ -1,5 +1,3 @@
-@using Microsoft.AspNetCore.Components.Web
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -10,12 +8,11 @@
     <title>Swallow.Components</title>
     <base href="/"/>
 
-    <link href="@Assets["DemoHost.Reactive.css"]" rel="stylesheet"/>
+    <link href="@Assets["DemoHost.Reactive.styles.css"]" rel="stylesheet"/>
     <HeadOutlet />
 </head>
 <body>
-    <Routing />
-    <!-- Boundary goes here -->
+    <ReactiveComponentBoundary ComponentType="@typeof(Routing)" />
 </body>
 
 </html>

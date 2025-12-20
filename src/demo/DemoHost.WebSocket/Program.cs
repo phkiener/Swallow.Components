@@ -1,4 +1,5 @@
 using DemoHost.WebSocket;
+using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
@@ -12,6 +13,11 @@ builder.Logging.SetMinimumLevel(LogLevel.Warning)
     .AddFilter("Swallow", LogLevel.Trace);
 
 var app = builder.Build();
+if (app.Environment.IsDevelopment())
+{
+    StaticWebAssetsLoader.UseStaticWebAssets(app.Environment, app.Configuration);
+}
+
 app.UseRouting();
 app.MapStaticAssets();
 app.UseAntiforgery();

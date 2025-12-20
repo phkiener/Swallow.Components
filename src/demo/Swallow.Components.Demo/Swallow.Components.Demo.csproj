@@ -1,5 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+  
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components" Version="10.0.1" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\components\Swallow.Components\Swallow.Components.csproj" />
+  </ItemGroup>
+  
 </Project>

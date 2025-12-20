@@ -1,0 +1,3 @@
+[*.cs]
+# We're playing around with Blazor internals here, so ignore that warning.
+dotnet_diagnostic.BL0006.severity = none;

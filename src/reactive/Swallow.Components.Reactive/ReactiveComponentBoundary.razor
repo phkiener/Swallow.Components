@@ -1,0 +1,13 @@
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.Extensions.DependencyInjection
+@using Swallow.Components.Reactive.Routing
+
+<div style="display: contents"
+     _srx-fragment
+     _srx-route="@targetUrl"
+     _srx-antiforgery-name="@antiforgeryToken?.FormFieldName"
+     _srx_antiforgery-token="@antiforgeryToken?.Value">
+
+    <!-- TODO: Allow prerendering -->
+</div>
+<script src="@Assets["_content/Swallow.Components.Reactive/reactive.js"]"></script>

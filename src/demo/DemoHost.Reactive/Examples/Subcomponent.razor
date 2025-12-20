@@ -1,0 +1,19 @@
+@implements IKeyedComponent
+
+<span @onclick="@(() => Tag = $"{Name}-{DateTime.UtcNow.Ticks}")">@Tag</span>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public required string Name { get; set; }
+
+    [PersistentState]
+    public string? Tag { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        Tag ??= $"{Name}-{DateTime.UtcNow.Ticks}";
+    }
+
+    public object Key => Name;
+}

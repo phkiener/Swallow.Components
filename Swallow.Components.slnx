@@ -25,8 +25,4 @@
     <Project Path="src/reactive/Swallow.Components.Reactive.Abstractions/Swallow.Components.Reactive.Abstractions.csproj" />
     <Project Path="src/reactive/Swallow.Components.Reactive/Swallow.Components.Reactive.csproj" />
   </Folder>
-  <Project Path="src/Swallow.Components.Demo/Swallow.Components.Demo.csproj" />
-  <Project Path="src/Swallow.Components.Reactive.Demo/Swallow.Components.Reactive.Demo.csproj" />
-  <Project Path="src/Swallow.Components.Reactive/Swallow.Components.Reactive.csproj" />
-  <Project Path="src/Swallow.Components/Swallow.Components.csproj" />
 </Solution>

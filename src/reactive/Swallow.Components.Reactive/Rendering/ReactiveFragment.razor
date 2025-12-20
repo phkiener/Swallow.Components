@@ -1,0 +1,26 @@
+@using Microsoft.AspNetCore.Components.Web
+@using Swallow.Components.Reactive.Rendering.EventHandlers
+@using Swallow.Components.Reactive.Rendering.State
+
+<!DOCTYPE html>
+<head lang="en">
+    <title></title>
+
+    @if (antiforgeryToken is not null)
+    {
+        <meta itemprop="antiforgery" data-name="@antiforgeryToken.FormFieldName" data-token="@antiforgeryToken.Value">
+    }
+
+    <ComponentStateMap />
+    <EventHandlerMap />
+
+</head>
+<body>
+    <div class="srx-head-content" style="display: none;">
+        <HeadOutlet />
+    </div>
+
+    <div class="srx-content" style="display: contents;">
+        <DynamicComponent Type="ComponentType" />
+    </div>
+</body>
