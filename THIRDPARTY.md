@@ -8,7 +8,9 @@ https://github.com/lucide-icons/lucide
 
 ISC License
 
-Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2023 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2025.
+Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2023 as part
+of Feather (MIT). All other copyright (c) for Lucide are held by Lucide
+Contributors 2025.
 
 Permission to use, copy, modify, and/or distribute this software for any
 purpose with or without fee is hereby granted, provided that the above
