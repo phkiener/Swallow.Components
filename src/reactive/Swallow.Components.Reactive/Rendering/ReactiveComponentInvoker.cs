@@ -1,4 +1,5 @@
 using System.Buffers;
+using System.Collections.Concurrent;
 using System.Net.Mime;
 using System.Reflection;
 using System.Text;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using Swallow.Components.Reactive.Rendering;
 using Swallow.Components.Reactive.Rendering.EventHandlers;
 using Swallow.Components.Reactive.Rendering.State;
 
@@ -21,6 +23,7 @@ internal sealed class ReactiveComponentInvoker(
     HandlerRegistration handlers,
     ILogger<ReactiveComponentInvoker> logger)
 {
+    private static readonly ConcurrentDictionary<Type, PropertyInfo[]> componentPropertyCache = new();
     private static readonly Type? FormDataProvider = typeof(IRazorComponentEndpointInvoker).Assembly.GetType("Microsoft.AspNetCore.Components.Endpoints.HttpContextFormDataProvider");
     private static MethodInfo? SetFormDataMethod;
 
@@ -41,12 +44,17 @@ internal sealed class ReactiveComponentInvoker(
         {
             try
             {
-                var dispatchedEvent = await ReadFormAsync(context);
+                var form = await context.Request.ReadFormAsync();
+                var dispatchedEvent = ReadEvent(form);
+                var parameters = ReadComponentParameters(componentType, form);
+                store.Initialize(form);
+
+                PopulateFormDataProvider(form, context.RequestServices);
                 await renderer.InitializeComponentServicesAsync(context, store);
 
                 try
                 {
-                    await renderer.RenderReactiveFragmentAsync(componentType);
+                    await renderer.RenderReactiveFragmentAsync(componentType, parameters);
                     renderer.DiscoverEventHandlers(handlers);
 
                     if (dispatchedEvent is not null)
@@ -101,10 +109,46 @@ internal sealed class ReactiveComponentInvoker(
         });
     }
 
-    private async Task<DispatchedEvent?> ReadFormAsync(HttpContext context)
+    private static DispatchedEvent? ReadEvent(IFormCollection form)
     {
-        var form = await context.Request.ReadFormAsync(context.RequestAborted);
+        if (form.TryGetValue("_srx-path", out var path) && form.TryGetValue("_srx-event", out var eventName))
+        {
+            return new DispatchedEvent(
+                Element: path.ToString(),
+                Event: eventName.ToString(),
+                EventBody: form.TryGetValue("_srx-event-body", out var eventBody) ? eventBody.ToString() : null);
+        }
 
+        return null;
+    }
+
+    private static IDictionary<string, object?> ReadComponentParameters(Type componentType, IFormCollection form)
+    {
+        var targetProperties = componentPropertyCache.GetOrAdd(componentType, ResolveComponentProperties);
+
+        var parameters = new Dictionary<string, object?>();
+        foreach (var property in targetProperties)
+        {
+            if (form.TryGetValue($"_srx-parameter-{property.Name}", out var serializedValue))
+            {
+                parameters[property.Name] = Serialization.DeserializeJson(serializedValue.ToString(), property.PropertyType);
+            }
+        }
+
+        return parameters;
+    }
+
+    private static PropertyInfo[] ResolveComponentProperties(Type componentType)
+    {
+        var properties = componentType.GetProperties()
+            .Where(static p => p.GetCustomAttribute<ParameterAttribute>() is not null && p is { CanRead: true, CanWrite: true })
+            .ToArray();
+
+        return properties;
+    }
+
+    private void PopulateFormDataProvider(IFormCollection form, IServiceProvider serviceProvider)
+    {
         // This needs to be done to initialize the SupplyParameterFromForm cascading parameter.
         // But Microsoft doesn't expose it, it's hidden in the EndpointHtmlRenderer. So.. we'll
         // need a bit of help to invoke it.
@@ -116,24 +160,12 @@ internal sealed class ReactiveComponentInvoker(
         else
         {
             var formHandlerName = form["_handler"];
-            var formDataProvider = context.RequestServices.GetService(FormDataProvider);
+            var formDataProvider = serviceProvider.GetService(FormDataProvider);
             if (formDataProvider is not null && formHandlerName.Count is 1)
             {
                 SetFormDataMethod.Invoke(formDataProvider, [formHandlerName[0], form.ToDictionary().AsReadOnly(), form.Files]);
             }
         }
-
-        store.Initialize(form);
-
-        if (form.TryGetValue("_srx-path", out var path) && form.TryGetValue("_srx-event", out var eventName))
-        {
-            return new DispatchedEvent(
-                Element: path.ToString(),
-                Event: eventName.ToString(),
-                EventBody: form.TryGetValue("_srx-event-body", out var eventBody) ? eventBody.ToString() : null);
-        }
-
-        return null;
     }
 
     private sealed record DispatchedEvent(string Element, string Event, string? EventBody);

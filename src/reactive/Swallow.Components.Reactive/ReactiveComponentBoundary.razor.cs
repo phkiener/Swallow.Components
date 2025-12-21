@@ -21,6 +21,13 @@ public sealed partial class ReactiveComponentBoundary(NavigationManager navigati
     [EditorRequired]
     public required Type ComponentType { get; set; }
 
+    /// <summary>
+    /// The parameters to pass to the rendered component.
+    /// </summary>
+    [Parameter]
+    [EditorRequired]
+    public IDictionary<string, object?> ComponentParameters { get; set; }
+
     [Inject]
     private ReactiveComponentRouteResolver RouteResolver { get; set; } = null!;
 

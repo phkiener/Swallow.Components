@@ -37,10 +37,15 @@ public static class RouteDataExtensions
 
     private sealed class ReactivePageHost<T> : ComponentBase
     {
+        [Parameter]
+        [EditorRequired]
+        public required IDictionary<string, object?> ComponentParameters { get; set; }
+
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
             builder.OpenComponent<ReactiveComponentBoundary>(0);
             builder.AddComponentParameter(1, nameof(ReactiveComponentBoundary.ComponentType), typeof(T));
+            builder.AddComponentParameter(2, nameof(ReactiveComponentBoundary.ComponentParameters), ComponentParameters);
             builder.CloseComponent();
         }
     }

@@ -11,6 +11,11 @@
         <meta itemprop="antiforgery" data-name="@antiforgeryToken.FormFieldName" data-token="@antiforgeryToken.Value">
     }
 
+    @foreach (var parameter in ComponentParameters)
+    {
+        <meta itemprop="parameter" data-key="@parameter.Key" data-value="@Serialization.SerializeJson(parameter.Value)">
+    }
+
     <ComponentStateMap />
     <EventHandlerMap />
 
@@ -21,7 +26,7 @@
     </div>
 
     <div class="srx-content" style="display: contents;">
-        <DynamicComponent Type="ComponentType" />
+        <DynamicComponent Type="ComponentType" Parameters="ComponentParameters" />
     </div>
 
     <div class="srx-error" style="display: none;">

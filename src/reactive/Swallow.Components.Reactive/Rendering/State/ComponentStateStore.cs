@@ -1,4 +1,3 @@
-using System.IO.Compression;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Http;
 
@@ -15,7 +14,7 @@ internal sealed class ComponentStateStore : IPersistentComponentStateStore
         foreach (var (key, value) in form.Where(static kvp => kvp.Key.StartsWith("_srx-state-")))
         {
             var storeKey = key["_srx-state-".Length..];
-            var storeValue = DeserializeBrotli(value.ToString());
+            var storeValue = Serialization.DeserializeBinary(value.ToString());
 
             currentState[storeKey] = storeValue;
         }
@@ -36,33 +35,10 @@ internal sealed class ComponentStateStore : IPersistentComponentStateStore
         foreach (var (key, value) in state)
         {
             currentState[key] = value;
-            serializedState[key] = SerializeBrotli(value);
+            serializedState[key] = Serialization.SerializeBinary(value);
         }
 
         OnStatePersisted?.Invoke(this, serializedState);
         return Task.CompletedTask;
-    }
-
-    private static string SerializeBrotli(byte[] bytes)
-    {
-        using var memoryStream = new MemoryStream();
-        using var compressingStream = new BrotliStream(memoryStream, CompressionMode.Compress);
-        compressingStream.Write(bytes);
-        compressingStream.Flush();
-
-        return Convert.ToBase64String(memoryStream.ToArray());
-    }
-
-    private static byte[] DeserializeBrotli(string bytes)
-    {
-        var decodedBytes = Convert.FromBase64String(bytes);
-        using var memoryStream = new MemoryStream(decodedBytes);
-        using var decompressingStream = new BrotliStream(memoryStream, CompressionMode.Decompress);
-        using var outputStream = new MemoryStream();
-
-        decompressingStream.CopyTo(outputStream);
-        decompressingStream.Flush();
-
-        return outputStream.ToArray();
     }
 }

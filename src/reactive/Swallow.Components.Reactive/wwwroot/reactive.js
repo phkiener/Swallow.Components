@@ -77,6 +77,10 @@
             }
         }
 
+        for (const parameterElement of [...targetElement.querySelectorAll("& > meta[itemprop='parameter']")]) {
+            formData.append("_srx-parameter-" + parameterElement.getAttribute("data-key"), parameterElement.getAttribute("data-value"));
+        }
+
         for (const stateElement of [...targetElement.querySelectorAll("& > meta[itemprop='state']")]) {
             formData.append("_srx-state-" + stateElement.getAttribute("data-key"), stateElement.getAttribute("data-value"));
         }
@@ -92,6 +96,9 @@
 
         [...document.head.querySelectorAll("meta[itemprop='event-handler']")]
             .forEach(meta => registerEventHandler(targetElement, meta.getAttribute("data-element"), meta.getAttribute("data-event")));
+
+        [...document.head.querySelectorAll("meta[itemprop='parameter']")]
+            .forEach(meta => targetElement.appendChild(meta));
 
         [...document.head.querySelectorAll("meta[itemprop='state']")]
             .forEach(meta => targetElement.appendChild(meta));

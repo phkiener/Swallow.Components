@@ -18,6 +18,10 @@ public sealed partial class ReactiveFragment(IServiceProvider serviceProvider) :
     [EditorRequired]
     public required Type ComponentType { get; set; }
 
+    [Parameter]
+    [EditorRequired]
+    public required IDictionary<string, object?> ComponentParameters { get; set; }
+
     protected override void OnInitialized()
     {
         if (AssignedRenderMode is not StaticReactiveRenderMode)

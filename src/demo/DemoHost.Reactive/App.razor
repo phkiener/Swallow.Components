@@ -12,7 +12,8 @@
     <HeadOutlet />
 </head>
 <body>
-    <ReactiveComponentBoundary ComponentType="@(HandleErrors ? typeof(ErrorHandledRoutes) : typeof(Routing))"/>
+    <ReactiveComponentBoundary ComponentType="@typeof(ErrorHandledRoutes)"
+                               ComponentParameters="@(new Dictionary<string, object?> { [nameof(ErrorHandledRoutes.HandleErrors)] = HandleErrors })"/>
 </body>
 
 </html>

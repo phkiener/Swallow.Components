@@ -1,8 +1,15 @@
+@using Swallow.Components.Reactive.Rendering
+
 <div style="display: contents"
      _srx-fragment
      _srx-route="@targetUrl"
      _srx-antiforgery-name="@antiforgeryToken?.FormFieldName"
      _srx_antiforgery-token="@antiforgeryToken?.Value">
+
+    @foreach (var parameter in ComponentParameters)
+    {
+        <meta itemprop="parameter" data-key="@parameter.Key" data-value="@Serialization.SerializeJson(parameter.Value)">
+    }
 
     <!-- TODO: Allow prerendering -->
 </div>

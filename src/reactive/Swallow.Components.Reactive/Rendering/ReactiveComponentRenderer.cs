@@ -90,11 +90,12 @@ internal class ReactiveComponentRenderer(IServiceProvider serviceProvider, ILogg
         }
     }
 
-    public Task RenderReactiveFragmentAsync(Type renderedComponent)
+    public Task RenderReactiveFragmentAsync(Type renderedComponent, IDictionary<string, object?> componentParameters)
     {
         var fragmentParameters = new Dictionary<string, object?>
         {
-            [nameof(ReactiveFragment.ComponentType)] = renderedComponent
+            [nameof(ReactiveFragment.ComponentType)] = renderedComponent,
+            [nameof(ReactiveFragment.ComponentParameters)] = componentParameters,
         };
 
         var root = BeginRenderingComponent(typeof(ReactiveFragment), ParameterView.FromDictionary(fragmentParameters));

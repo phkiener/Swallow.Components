@@ -1,16 +1,30 @@
 @using Swallow.Components.Demo.Layout
 @attribute [ReactiveComponent]
 
-<ErrorBoundary>
-    <ChildContent>
-        <Routing />
-    </ChildContent>
-    <ErrorContent>
-        <LayoutView Layout="@typeof(MainLayout)">
-            <h2>Oh noes, something went wrong</h2>
-            <div>
-                @context.Message
-            </div>
-        </LayoutView>
-    </ErrorContent>
-</ErrorBoundary>
+@if (HandleErrors)
+{
+    <ErrorBoundary>
+        <ChildContent>
+            <Routing />
+        </ChildContent>
+        <ErrorContent>
+            <LayoutView Layout="@typeof(MainLayout)">
+                <h2>Oh noes, something went wrong</h2>
+                <div>
+                    @context.Message
+                </div>
+            </LayoutView>
+        </ErrorContent>
+    </ErrorBoundary>
+}
+else
+{
+    <Routing />
+}
+
+@code {
+
+    [Parameter]
+    public bool HandleErrors { get; set; } = false;
+
+}
