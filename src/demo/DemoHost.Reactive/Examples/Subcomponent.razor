@@ -1,5 +1,3 @@
-@implements IKeyedComponent
-
 <span @onclick="@(() => Tag = $"{Name}-{DateTime.UtcNow.Ticks}")">@Tag</span>
 
 @code {

@@ -22,6 +22,11 @@ internal sealed class ComponentStateStore : IPersistentComponentStateStore
 
     public event EventHandler<IReadOnlyDictionary<string, string>>? OnStatePersisted;
 
+    public IReadOnlyDictionary<string, string> GetSerializedState()
+    {
+        return currentState.ToDictionary(static kvp => kvp.Key, static kvp => Serialization.SerializeBinary(kvp.Value));
+    }
+
     public Task<IDictionary<string, byte[]>> GetPersistedStateAsync()
     {
         return Task.FromResult<IDictionary<string, byte[]>>(currentState);
@@ -40,5 +45,10 @@ internal sealed class ComponentStateStore : IPersistentComponentStateStore
 
         OnStatePersisted?.Invoke(this, serializedState);
         return Task.CompletedTask;
+    }
+
+    public bool SupportsRenderMode(IComponentRenderMode renderMode)
+    {
+        return renderMode is null or StaticReactiveRenderMode;
     }
 }

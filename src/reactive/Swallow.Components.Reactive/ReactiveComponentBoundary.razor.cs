@@ -40,7 +40,6 @@ public sealed partial class ReactiveComponentBoundary(NavigationManager navigati
     [Inject]
     private ReactiveComponentRouteResolver RouteResolver { get; set; } = null!;
 
-
     /// <inheritdoc />
     protected override void OnInitialized()
     {
@@ -50,7 +49,11 @@ public sealed partial class ReactiveComponentBoundary(NavigationManager navigati
         }
 
         antiforgeryToken = serviceProvider.GetService<AntiforgeryStateProvider>()?.GetAntiforgeryToken();
-        HttpContext?.Items.TryAdd(HasPrerenderedStateMarker, true);
+
+        if (Prerender)
+        {
+            HttpContext?.Items.TryAdd(HasPrerenderedStateMarker, true);
+        }
     }
 
     /// <inheritdoc />

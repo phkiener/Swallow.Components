@@ -1,7 +1,6 @@
 using System.Reflection;
 using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -100,32 +99,11 @@ public static class ServiceProviderConfig
                 return;
             }
 
-            var store = new InlineStore();
+            var store = new ComponentStateStore();
             await stateManager.PersistStateAsync(store, renderer);
 
-            var state = $"<!-- srx-prerender-state {JsonSerializer.Serialize(store.PersistedState)} -->";
+            var state = $"<!-- srx-prerender-state {JsonSerializer.Serialize(store.GetSerializedState())} -->";
             await httpContext.Response.WriteAsync(state);
-        }
-    }
-
-    private sealed class InlineStore : IPersistentComponentStateStore
-    {
-        public IReadOnlyDictionary<string, byte[]> PersistedState { get; private set; } = new Dictionary<string, byte[]>();
-
-        public Task<IDictionary<string, byte[]>> GetPersistedStateAsync()
-        {
-            return Task.FromResult<IDictionary<string, byte[]>>(new Dictionary<string, byte[]>(PersistedState));
-        }
-
-        public Task PersistStateAsync(IReadOnlyDictionary<string, byte[]> state)
-        {
-            PersistedState = state;
-            return Task.CompletedTask;
-        }
-
-        public bool SupportsRenderMode(IComponentRenderMode renderMode)
-        {
-            return renderMode is null or StaticReactiveRenderMode;
         }
     }
 }

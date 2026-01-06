@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Http;
@@ -49,7 +48,7 @@ internal class ReactiveComponentRenderer(IServiceProvider serviceProvider, ILogg
             fragmentComponentId = componentId;
         }
 
-        return new ComponentStateWithKeyOverride(this, componentId, component, parentComponentState);
+        return base.CreateComponentState(componentId, component, parentComponentState);
     }
 
     public async Task InitializeComponentServicesAsync(HttpContext context, ComponentStateStore store)
@@ -137,14 +136,5 @@ internal class ReactiveComponentRenderer(IServiceProvider serviceProvider, ILogg
 
         ProcessPendingRender();
         WriteComponentHtml(rootComponentId.Value, output);
-    }
-
-    private sealed class ComponentStateWithKeyOverride(Renderer renderer, int componentId, IComponent component, ComponentState? parentComponentState)
-        : ComponentState(renderer, componentId, component, parentComponentState)
-    {
-        protected override object? GetComponentKey()
-        {
-            return Component is IKeyedComponent key ? key.Key : base.GetComponentKey();
-        }
     }
 }

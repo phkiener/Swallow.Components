@@ -2,8 +2,20 @@
 
 (async scriptTag => {
     document.addEventListener('DOMContentLoaded', async () => {
+        const fragment = scriptTag.previousElementSibling;
+
         await triggerInteraction(scriptTag.previousElementSibling, null);
         scriptTag.remove();
+
+        const allFragments = document.querySelectorAll("[_srx-fragment]");
+        if (fragment === allFragments[allFragments.length - 1]) {
+            const trailingComments = [...document.childNodes].filter(n => n.nodeType === Node.COMMENT_NODE);
+            for (const trailingComment of trailingComments) {
+                if (trailingComment.textContent.startsWith(" srx-prerender-state ")) {
+                    trailingComment.remove();
+                }
+            }
+        }
     });
 
     async function triggerInteraction(targetElement, triggeringEvent) {
@@ -19,7 +31,11 @@
 
         if (response.error) {
             targetElement.setAttribute("_srx-error", "");
-            targetElement.querySelector("& > .srx-error").innerText = response.error;
+
+            const errorContainer = targetElement.querySelector("& > .srx-error");
+            if (errorContainer) {
+                errorContainer.innerText = response.error;
+            }
         }
     }
 
