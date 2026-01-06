@@ -1,10 +1,10 @@
 'use strict';
 
 (async scriptTag => {
-    const reactiveFragment = scriptTag.previousElementSibling;
-
-    await triggerInteraction(reactiveFragment, null);
-    scriptTag.remove();
+    document.addEventListener('DOMContentLoaded', async () => {
+        await triggerInteraction(scriptTag.previousElementSibling, null);
+        scriptTag.remove();
+    });
 
     async function triggerInteraction(targetElement, triggeringEvent) {
         const response = await fetchResponse(targetElement, triggeringEvent);
@@ -81,8 +81,24 @@
             formData.append("_srx-parameter-" + parameterElement.getAttribute("data-key"), parameterElement.getAttribute("data-value"));
         }
 
-        for (const stateElement of [...targetElement.querySelectorAll("& > meta[itemprop='state']")]) {
-            formData.append("_srx-state-" + stateElement.getAttribute("data-key"), stateElement.getAttribute("data-value"));
+        const stateElements = [...targetElement.querySelectorAll("& > meta[itemprop='state']")];
+        if (stateElements.length > 0) {
+            for (const stateElement of [...targetElement.querySelectorAll("& > meta[itemprop='state']")]) {
+                formData.append("_srx-state-" + stateElement.getAttribute("data-key"), stateElement.getAttribute("data-value"));
+            }
+        }
+        else {
+            const trailingComments = [...document.childNodes].filter(n => n.nodeType === Node.COMMENT_NODE);
+            for (const trailingComment of trailingComments) {
+                if (trailingComment.textContent.startsWith(" srx-prerender-state ")) {
+                    const prerenderedStateText = trailingComment.textContent.substring(21);
+                    const parsedState = JSON.parse(prerenderedStateText);
+
+                    for (const key in parsedState) {
+                        formData.append("_srx-state-" + key, parsedState[key]);
+                    }
+                }
+            }
         }
 
         return formData;
