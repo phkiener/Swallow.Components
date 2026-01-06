@@ -29,7 +29,8 @@ app.UseAntiforgery();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapRazorComponents<App>()
-    .AddAdditionalAssemblies(Routing.AdditionalAssemblies);
+    .AddAdditionalAssemblies(Routing.AdditionalAssemblies)
+    .PersistPrerenderedState();
 
 app.MapReactiveComponents()
     .AddAdditionalAssemblies(Routing.AdditionalAssemblies);

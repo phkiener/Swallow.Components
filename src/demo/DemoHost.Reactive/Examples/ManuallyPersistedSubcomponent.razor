@@ -1,27 +1,20 @@
 @inject PersistentComponentState State
 @implements IDisposable
 
-<span @onclick="@(() => Tag = $"{Name}-{DateTime.UtcNow.Ticks}")">@Tag</span>
+<span @onclick="@(() => tag = $"{Name}-{DateTime.UtcNow.Ticks}")">@tag</span>
 
 @code {
     [Parameter]
     [EditorRequired]
     public required string Name { get; set; }
 
-    private string? Tag { get; set; }
+    private string? tag;
     private IDisposable? persistSubscription;
 
     protected override void OnInitialized()
     {
-        Tag = State.TryTakeFromJson<string>($"schnitzel-{Name}", out var tag) ? tag : $"{Name}-{DateTime.UtcNow.Ticks}";
-        persistSubscription = State.RegisterOnPersisting(Persist);
-    }
-
-    private Task Persist()
-    {
-        State.PersistAsJson($"schnitzel-{Name}", Tag);
-
-        return Task.CompletedTask;
+        persistSubscription = State.Register($"schnitzel-{Name}", ref tag, () => tag);
+        tag ??= $"{Name}-{DateTime.UtcNow.Ticks}";
     }
 
     public void Dispose()

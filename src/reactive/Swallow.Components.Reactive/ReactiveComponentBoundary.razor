@@ -10,5 +10,11 @@
     {
         <meta itemprop="parameter" data-key="@parameter.Key" data-value="@Serialization.SerializeJson(parameter.Value)">
     }
+
+    @if (Prerender)
+    {
+        <DynamicComponent Type="ComponentType" Parameters="ComponentParameters" />
+    }
+
 </div>
 <script src="@Assets["_content/Swallow.Components.Reactive/reactive.js"]"></script>

@@ -1,4 +1,11 @@
 using System.Reflection;
+using System.Text.Json;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Endpoints;
+using Microsoft.AspNetCore.Components.Infrastructure;
+using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Swallow.Components.Reactive.Framework;
@@ -59,5 +66,66 @@ public static class ServiceProviderConfig
         return dataSource.ConventionBuilder
             .WithStaticAssets()
             .AddAdditionalAssemblies(initialAssemblies.OfType<Assembly>());
+    }
+
+    public static RazorComponentsEndpointConventionBuilder PersistPrerenderedState(this RazorComponentsEndpointConventionBuilder builder)
+    {
+        // The endpoint builder for razor components ignores any endpoint filters, so... we'll have to do that dance by ourselves.
+        builder.Add(eb =>
+        {
+            var originalDelegate = eb.RequestDelegate;
+            if (originalDelegate is null)
+            {
+                // what.
+                return;
+            }
+
+            eb.RequestDelegate = c => AppendPrerenderedStateAsync(c, originalDelegate);
+        });
+
+        return builder;
+    }
+
+    private static async Task AppendPrerenderedStateAsync(HttpContext httpContext, RequestDelegate next)
+    {
+        await next(httpContext);
+
+        if (httpContext.Items.ContainsKey(ReactiveComponentBoundary.HasPrerenderedStateMarker))
+        {
+            var renderer = httpContext.RequestServices.GetRequiredService<IComponentPrerenderer>() as Renderer;
+            var stateManager = httpContext.RequestServices.GetRequiredService<ComponentStatePersistenceManager>();
+
+            if (renderer is null) // weird, but let's not do anything
+            {
+                return;
+            }
+
+            var store = new InlineStore();
+            await stateManager.PersistStateAsync(store, renderer);
+
+            var state = $"<!-- srx-prerender-state {JsonSerializer.Serialize(store.PersistedState)} -->";
+            await httpContext.Response.WriteAsync(state);
+        }
+    }
+
+    private sealed class InlineStore : IPersistentComponentStateStore
+    {
+        public IReadOnlyDictionary<string, byte[]> PersistedState { get; private set; } = new Dictionary<string, byte[]>();
+
+        public Task<IDictionary<string, byte[]>> GetPersistedStateAsync()
+        {
+            return Task.FromResult<IDictionary<string, byte[]>>(new Dictionary<string, byte[]>(PersistedState));
+        }
+
+        public Task PersistStateAsync(IReadOnlyDictionary<string, byte[]> state)
+        {
+            PersistedState = state;
+            return Task.CompletedTask;
+        }
+
+        public bool SupportsRenderMode(IComponentRenderMode renderMode)
+        {
+            return renderMode is null or StaticReactiveRenderMode;
+        }
     }
 }

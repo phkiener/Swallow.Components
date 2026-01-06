@@ -12,7 +12,7 @@
     <HeadOutlet />
 </head>
 <body>
-    <ReactiveComponentBoundary ComponentType="@typeof(ErrorHandledRoutes)"
+    <ReactiveComponentBoundary ComponentType="@typeof(ErrorHandledRoutes)" Prerender
                                ComponentParameters="@(new Dictionary<string, object?> { [nameof(ErrorHandledRoutes.HandleErrors)] = HandleErrors })"/>
 </body>
 

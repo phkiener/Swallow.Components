@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Swallow.Components.Reactive.Routing;
 
@@ -10,6 +11,8 @@ namespace Swallow.Components.Reactive;
 /// </summary>
 public sealed partial class ReactiveComponentBoundary(NavigationManager navigationManager, IServiceProvider serviceProvider) : ComponentBase
 {
+    internal const string HasPrerenderedStateMarker = "_srx-prerender-state";
+
     private string? targetUrl;
     private AntiforgeryRequestToken? antiforgeryToken;
 
@@ -28,8 +31,15 @@ public sealed partial class ReactiveComponentBoundary(NavigationManager navigati
     [EditorRequired]
     public IDictionary<string, object?> ComponentParameters { get; set; }
 
+    [Parameter]
+    public bool Prerender { get; set; } = false;
+
+    [CascadingParameter]
+    public HttpContext? HttpContext { get; set; }
+
     [Inject]
     private ReactiveComponentRouteResolver RouteResolver { get; set; } = null!;
+
 
     /// <inheritdoc />
     protected override void OnInitialized()
@@ -40,6 +50,7 @@ public sealed partial class ReactiveComponentBoundary(NavigationManager navigati
         }
 
         antiforgeryToken = serviceProvider.GetService<AntiforgeryStateProvider>()?.GetAntiforgeryToken();
+        HttpContext?.Items.TryAdd(HasPrerenderedStateMarker, true);
     }
 
     /// <inheritdoc />
