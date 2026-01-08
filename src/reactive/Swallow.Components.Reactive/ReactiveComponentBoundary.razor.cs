@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 using Swallow.Components.Reactive.Routing;
 
 namespace Swallow.Components.Reactive;
@@ -9,12 +7,11 @@ namespace Swallow.Components.Reactive;
 /// <summary>
 /// A render-mode boundary to switch from static rendering to reactive rendering.
 /// </summary>
-public sealed partial class ReactiveComponentBoundary(NavigationManager navigationManager, IServiceProvider serviceProvider) : ComponentBase
+public sealed partial class ReactiveComponentBoundary(NavigationManager navigationManager) : ComponentBase
 {
     internal const string HasPrerenderedStateMarker = "_srx-prerender-state";
 
     private string? targetUrl;
-    private AntiforgeryRequestToken? antiforgeryToken;
 
     /// <summary>
     /// The component to render reactively; needs to have the
@@ -47,8 +44,6 @@ public sealed partial class ReactiveComponentBoundary(NavigationManager navigati
         {
             throw new InvalidOperationException($"{nameof(ReactiveComponentBoundary)} can only be used while rendering statically.");
         }
-
-        antiforgeryToken = serviceProvider.GetService<AntiforgeryStateProvider>()?.GetAntiforgeryToken();
 
         if (Prerender)
         {

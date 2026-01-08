@@ -1,4 +1,4 @@
-@if (antiforgeryToken is not null)
+@if (tokenSet?.RequestToken is not null)
 {
-    <meta itemprop="antiforgery" data-name="@antiforgeryToken.FormFieldName" data-token="@antiforgeryToken.Value">
+    <meta itemprop="antiforgery" data-name="@tokenSet.FormFieldName" data-token="@tokenSet.RequestToken">
 }

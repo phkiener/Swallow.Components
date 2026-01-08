@@ -38,12 +38,14 @@ internal class ReactiveComponentRenderer(IServiceProvider serviceProvider, ILogg
 
     protected override ComponentState CreateComponentState(int componentId, IComponent component, ComponentState? parentComponentState)
     {
-        if (parentComponentState is null)
+        if (rootComponentId is null && parentComponentState is null)
         {
             rootComponentId = componentId;
         }
 
-        if (parentComponentState?.ComponentId == rootComponentId && component is DynamicComponent)
+        // The relevant component is rendered via DynamicComponent inside a CascadingValue inside the root component.
+        // We go up two levels and check if that's the root to find out if the dynamic component is the *correct* dynamic component.
+        if (fragmentComponentId is null && component is DynamicComponent && parentComponentState?.ParentComponentState?.ComponentId == rootComponentId)
         {
             fragmentComponentId = componentId;
         }
@@ -89,12 +91,13 @@ internal class ReactiveComponentRenderer(IServiceProvider serviceProvider, ILogg
         }
     }
 
-    public Task RenderReactiveFragmentAsync(Type renderedComponent, IDictionary<string, object?> componentParameters)
+    public Task RenderReactiveFragmentAsync(Type renderedComponent, IDictionary<string, object?> componentParameters, HttpContext httpContext)
     {
         var fragmentParameters = new Dictionary<string, object?>
         {
             [nameof(ReactiveFragment.ComponentType)] = renderedComponent,
             [nameof(ReactiveFragment.ComponentParameters)] = componentParameters,
+            [nameof(ReactiveFragment.HttpContext)] = httpContext,
         };
 
         var root = BeginRenderingComponent(typeof(ReactiveFragment), ParameterView.FromDictionary(fragmentParameters));

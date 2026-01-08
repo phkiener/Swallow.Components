@@ -8,7 +8,7 @@ namespace Swallow.Components.Reactive.Rendering;
 /// <remarks>
 /// This component is not meant to be used directly.
 /// </remarks>
-public partial class ComponentParameterMetadata : ComponentBase
+public sealed partial class ComponentParameterMetadata : ComponentBase
 {
     /// <summary>
     /// The parameters to persist.

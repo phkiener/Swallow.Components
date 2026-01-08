@@ -1,6 +1,6 @@
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Http;
 
 namespace Swallow.Components.Reactive.Rendering;
 
@@ -10,12 +10,18 @@ namespace Swallow.Components.Reactive.Rendering;
 /// <remarks>
 /// This component is not meant to be used directly.
 /// </remarks>
-public sealed partial class AntiforgeryMetadata(IServiceProvider serviceProvider) : ComponentBase
+public sealed partial class AntiforgeryMetadata(IAntiforgery antiforgery) : ComponentBase
 {
-    private AntiforgeryRequestToken? antiforgeryToken;
+    [CascadingParameter]
+    public required HttpContext HttpContext { get; set; }
 
+    private AntiforgeryTokenSet? tokenSet;
+
+    /// <inheritdoc/>
     protected override void OnInitialized()
     {
-        antiforgeryToken = serviceProvider.GetService<AntiforgeryStateProvider>()?.GetAntiforgeryToken();
+        tokenSet = HttpContext.Response.HasStarted
+            ? antiforgery.GetTokens(HttpContext)
+            : antiforgery.GetAndStoreTokens(HttpContext);
     }
 }

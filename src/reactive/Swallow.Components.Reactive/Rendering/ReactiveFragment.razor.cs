@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Http;
 
 namespace Swallow.Components.Reactive.Rendering;
 
@@ -10,10 +9,8 @@ namespace Swallow.Components.Reactive.Rendering;
 /// <remarks>
 /// This component is not meant to be used directly.
 /// </remarks>
-public sealed partial class ReactiveFragment(IServiceProvider serviceProvider) : ComponentBase
+public sealed partial class ReactiveFragment : ComponentBase
 {
-    private AntiforgeryRequestToken? antiforgeryToken;
-
     [Parameter]
     [EditorRequired]
     public required Type ComponentType { get; set; }
@@ -22,13 +19,15 @@ public sealed partial class ReactiveFragment(IServiceProvider serviceProvider) :
     [EditorRequired]
     public required IDictionary<string, object?> ComponentParameters { get; set; }
 
+    [Parameter]
+    [EditorRequired]
+    public required HttpContext HttpContext { get; set; }
+
     protected override void OnInitialized()
     {
         if (AssignedRenderMode is not StaticReactiveRenderMode)
         {
             throw new InvalidOperationException($"{nameof(ReactiveFragment)} can only be used with static reactive rendering.");
         }
-
-        antiforgeryToken = serviceProvider.GetService<AntiforgeryStateProvider>()?.GetAntiforgeryToken();
     }
 }

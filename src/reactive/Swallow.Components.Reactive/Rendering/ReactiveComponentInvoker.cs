@@ -54,7 +54,7 @@ internal sealed class ReactiveComponentInvoker(
 
                 try
                 {
-                    await renderer.RenderReactiveFragmentAsync(componentType, parameters);
+                    await renderer.RenderReactiveFragmentAsync(componentType, parameters, context);
                     renderer.DiscoverEventHandlers(handlers);
 
                     if (dispatchedEvent is not null)
