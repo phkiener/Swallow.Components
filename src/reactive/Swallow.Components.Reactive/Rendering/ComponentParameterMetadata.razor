@@ -1,0 +1,4 @@
+@foreach (var parameter in Parameters)
+{
+    <meta itemprop="parameter" data-key="@parameter.Key" data-value="@Serialization.SerializeJson(parameter.Value)">
+}

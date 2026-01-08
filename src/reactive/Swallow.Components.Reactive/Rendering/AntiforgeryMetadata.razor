@@ -1,0 +1,4 @@
+@if (antiforgeryToken is not null)
+{
+    <meta itemprop="antiforgery" data-name="@antiforgeryToken.FormFieldName" data-token="@antiforgeryToken.Value">
+}

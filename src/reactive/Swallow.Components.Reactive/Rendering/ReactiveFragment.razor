@@ -5,21 +5,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title></title>
+    <title>@ComponentType.Name</title>
 
-    @if (antiforgeryToken is not null)
-    {
-        <meta itemprop="antiforgery" data-name="@antiforgeryToken.FormFieldName" data-token="@antiforgeryToken.Value">
-    }
-
-    @foreach (var parameter in ComponentParameters)
-    {
-        <meta itemprop="parameter" data-key="@parameter.Key" data-value="@Serialization.SerializeJson(parameter.Value)">
-    }
-
-    <ComponentStateMap />
-    <EventHandlerMap />
-
+    <AntiforgeryMetadata/>
+    <ComponentParameterMetadata Parameters="@ComponentParameters.AsReadOnly()"/>
+    <ComponentStateMap/>
+    <EventHandlerMap/>
 </head>
 <body>
     <div class="srx-head-content" style="display: none;">

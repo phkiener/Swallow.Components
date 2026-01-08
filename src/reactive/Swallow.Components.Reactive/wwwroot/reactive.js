@@ -75,13 +75,7 @@
     }
 
     function buildForm(targetElement, triggeringEvent) {
-        const antiforgeryName = targetElement.getAttribute("_srx-antiforgery-name");
-        const antiforgeryToken = targetElement.getAttribute("_srx_antiforgery-token");
-
         const formData = new FormData();
-        if (antiforgeryName && antiforgeryToken) {
-            formData.append(antiforgeryName, antiforgeryToken);
-        }
 
         if (triggeringEvent) {
             formData.append("_srx-event", "on" + triggeringEvent.event.type);
@@ -91,6 +85,11 @@
             if (transformer) {
                 formData.append("_srx-event-body", JSON.stringify(transformer(triggeringEvent.event)));
             }
+        }
+
+        const antiforgeryElement = targetElement.querySelector("& > meta[itemprop='antiforgery']");
+        if (antiforgeryElement) {
+            formData.append(antiforgeryElement.getAttribute("data-name"), antiforgeryElement.getAttribute("data-token"));
         }
 
         for (const parameterElement of [...targetElement.querySelectorAll("& > meta[itemprop='parameter']")]) {
@@ -133,6 +132,9 @@
             .forEach(meta => targetElement.appendChild(meta));
 
         [...document.head.querySelectorAll("meta[itemprop='state']")]
+            .forEach(meta => targetElement.appendChild(meta));
+
+        [...document.head.querySelectorAll("meta[itemprop='antiforgery']")]
             .forEach(meta => targetElement.appendChild(meta));
     }
 

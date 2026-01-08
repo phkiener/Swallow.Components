@@ -2,19 +2,14 @@
 
 <div style="display: contents"
      _srx-fragment
-     _srx-route="@targetUrl"
-     _srx-antiforgery-name="@antiforgeryToken?.FormFieldName"
-     _srx_antiforgery-token="@antiforgeryToken?.Value">
+     _srx-route="@targetUrl">
 
-    @foreach (var parameter in ComponentParameters)
-    {
-        <meta itemprop="parameter" data-key="@parameter.Key" data-value="@Serialization.SerializeJson(parameter.Value)">
-    }
+    <AntiforgeryMetadata />
+    <ComponentParameterMetadata Parameters="@ComponentParameters.AsReadOnly()" />
 
     @if (Prerender)
     {
-        <DynamicComponent Type="ComponentType" Parameters="ComponentParameters" />
+        <DynamicComponent Type="ComponentType" Parameters="ComponentParameters"/>
     }
-
 </div>
 <script src="@Assets["_content/Swallow.Components.Reactive/reactive.js"]"></script>
