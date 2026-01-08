@@ -98,6 +98,7 @@ internal sealed class ReactiveComponentInvoker(
             }
             catch (Exception exception)
             {
+                logger.LogError(exception, "Unhandled exception while rendering");
                 context.Response.StatusCode = StatusCodes.Status500InternalServerError;
                 await context.Response.WriteAsync(exception.Message);
                 await context.Response.CompleteAsync();

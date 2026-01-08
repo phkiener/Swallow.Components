@@ -30,9 +30,17 @@
 
 <div>
     <button type="button" @onclick="@(() => throw new NotImplementedException())">Crash and burn :)</button>
+    <button type="button" @onclick="@(() => Crash = true)">Crash during rendering</button>
 </div>
 
+@if (Crash)
+{
+    <BrokenComponent />
+}
+
 @code {
+
+    public bool Crash { get; set; }
 
     [PersistentState]
     public int Counter { get; set; }
