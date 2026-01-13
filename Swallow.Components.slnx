@@ -11,9 +11,6 @@
     <File Path="README.md" />
     <File Path="THIRDPARTY.md" />
   </Folder>
-  <Folder Name="/Components/">
-    <Project Path="src/components/Swallow.Components/Swallow.Components.csproj" />
-  </Folder>
   <Folder Name="/Demo/">
     <Project Path="src/demo/DemoHost.Reactive/DemoHost.Reactive.csproj" />
     <Project Path="src/demo/DemoHost.Static/DemoHost.Static.csproj" />
@@ -21,7 +18,11 @@
     <Project Path="src/demo/DemoHost.WebSocket/DemoHost.WebSocket.csproj" />
     <Project Path="src/demo/Swallow.Components.Demo/Swallow.Components.Demo.csproj" />
   </Folder>
-  <Folder Name="/Reactive/">
+  <Folder Name="/Packages/" />
+  <Folder Name="/Packages/Components/">
+    <Project Path="src/components/Swallow.Components/Swallow.Components.csproj" />
+  </Folder>
+  <Folder Name="/Packages/Reactive/">
     <Project Path="src/reactive/Swallow.Components.Reactive.Abstractions/Swallow.Components.Reactive.Abstractions.csproj" />
     <Project Path="src/reactive/Swallow.Components.Reactive/Swallow.Components.Reactive.csproj" />
   </Folder>
