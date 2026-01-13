@@ -6,8 +6,9 @@ using Swallow.Components.Reactive;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
-    .AddReactiveComponents()
-    .RegisterPersistentService<ServiceWithState>(RenderMode.StaticReactive);
+    .AddReactiveComponents();
+
+builder.Services.RegisterPersistentService<ServiceWithState>(RenderMode.StaticReactive);
 
 builder.Services.AddScoped<ServiceWithState>();
 builder.Services.AddAuthentication();

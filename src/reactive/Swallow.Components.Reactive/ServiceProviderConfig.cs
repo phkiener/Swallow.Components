@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -67,19 +68,25 @@ public static class ServiceProviderConfig
             .AddAdditionalAssemblies(initialAssemblies.OfType<Assembly>());
     }
 
+    /// <inheritdoc cref="RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration{TService}"/>
+    public static IServiceCollection RegisterPersistentService<TService>(this IServiceCollection services, IComponentRenderMode renderMode)
+    {
+        return RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<TService>(services, renderMode);
+    }
+
     public static RazorComponentsEndpointConventionBuilder PersistPrerenderedState(this RazorComponentsEndpointConventionBuilder builder)
     {
         // The endpoint builder for razor components ignores any endpoint filters, so... we'll have to do that dance by ourselves.
-        builder.Add(eb =>
+        builder.Add(static eb =>
         {
-            var originalDelegate = eb.RequestDelegate;
-            if (originalDelegate is null)
+            if (eb.RequestDelegate is null)
             {
-                // what.
+                // Just.. ignore it.
                 return;
             }
 
-            eb.RequestDelegate = c => AppendPrerenderedStateAsync(c, originalDelegate);
+            var capturedDelegate = eb.RequestDelegate;
+            eb.RequestDelegate = c => AppendPrerenderedStateAsync(c, capturedDelegate);
         });
 
         return builder;
