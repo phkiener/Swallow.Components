@@ -20,6 +20,7 @@
   </Folder>
   <Folder Name="/Packages/" />
   <Folder Name="/Packages/Components/">
+    <Project Path="src/components/Swallow.Components.Icons/Swallow.Components.Icons.csproj" />
     <Project Path="src/components/Swallow.Components/Swallow.Components.csproj" />
   </Folder>
   <Folder Name="/Packages/Reactive/">

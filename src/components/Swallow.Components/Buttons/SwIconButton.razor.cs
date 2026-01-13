@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Components.Web;
 namespace Swallow.Components.Buttons;
 
 /// <summary>
-/// A button that is simply an icon.
+/// A square button made for icons.
 /// </summary>
 public sealed partial class SwIconButton : ComponentBase
 {
@@ -45,11 +45,11 @@ public sealed partial class SwIconButton : ComponentBase
     public ButtonRounding? Rounding { get; set; }
 
     /// <summary>
-    /// The icon to display.
+    /// The content to display.
     /// </summary>
     [Parameter]
     [EditorRequired]
-    public required IconType Icon { get; set; }
+    public required RenderFragment ChildContent { get; set; }
 
     /// <summary>
     /// Callback to invoke when clicking the button.

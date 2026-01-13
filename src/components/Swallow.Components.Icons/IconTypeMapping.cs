@@ -1,6 +1,6 @@
 using System.Collections.Frozen;
 
-namespace Swallow.Components;
+namespace Swallow.Components.Icons;
 
 internal static class IconTypeMapping
 {

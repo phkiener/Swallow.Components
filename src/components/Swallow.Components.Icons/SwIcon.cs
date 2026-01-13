@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 
-namespace Swallow.Components;
+namespace Swallow.Components.Icons;
 
 /// <summary>
 /// Renders an SVG icon.

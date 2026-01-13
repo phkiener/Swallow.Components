@@ -1,4 +1,4 @@
-namespace Swallow.Components;
+namespace Swallow.Components.Icons;
 
 /// <summary>
 /// All available icons for <see cref="SwIcon"/>.

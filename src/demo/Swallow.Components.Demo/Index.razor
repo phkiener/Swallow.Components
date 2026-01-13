@@ -1,6 +1,7 @@
 @page "/"
 @using Swallow.Components.Buttons
 @using Swallow.Components.Forms
+@using Swallow.Components.Icons
 
 This is the main page.
 
@@ -45,7 +46,9 @@ This is the main page.
 <p style="display: flex; flex-direction: row; gap: 1ch; align-items: center">
     @foreach (var size in Enum.GetValues<ButtonSize>())
     {
-        <SwIconButton Size="@size" Icon="IconType.Anvil" />
+        <SwIconButton Size="@size">
+            <SwIcon Icon="IconType.Anvil" />
+        </SwIconButton>
     }
 </p>
 
