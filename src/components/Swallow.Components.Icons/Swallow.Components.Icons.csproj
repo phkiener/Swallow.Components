@@ -2,11 +2,21 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components" Version="10.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Icons/**/*.svg" />
+    <ProjectReference Include="../../tooling/IconMappingGenerator/IconMappingGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="IconMappingGenerator" />
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="IconMappingGenerator_Resource" />
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="IconMappingGenerator_Comment" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Icons/**/*.svg" LogicalName="icons/%(Filename)%(Extension)" />
+    <AdditionalFiles Include="@(EmbeddedResource)"
+                     IconMappingGenerator="true"
+                     IconMappingGenerator_Resource="%(LogicalName)"
+                     IconMappingGenerator_Comment="See https://lucide.dev/icons/%(Filename)" />
   </ItemGroup>
 
 </Project>
