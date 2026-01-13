@@ -25,16 +25,18 @@ public sealed class IconTypeMappingGenerator : IIncrementalGenerator
 
     private static void GenerateIconMapping(SourceProductionContext context, (GeneratorTarget Container, ImmutableArray<IncludedIcon> EmbeddedIcons) data)
     {
+        var sortedIcons = data.EmbeddedIcons.OrderBy(static i => i.CodeName).ToList();
+
         var iconType = SourceCodes.IconType(
             containingNamespace: data.Container.ContainingNamespace,
             name: data.Container.IconTypeClass,
-            embeddedIcons: data.EmbeddedIcons);
+            embeddedIcons: sortedIcons);
 
         var mapping = SourceCodes.IconTypeMapping(
             containingNamespace: data.Container.ContainingNamespace,
             name: data.Container.IconTypeMappingClass,
             iconTypeName: data.Container.IconTypeClass,
-            embeddedIcons: data.EmbeddedIcons);
+            embeddedIcons: sortedIcons);
 
         context.AddSource($"{data.Container.ContainingNamespace}.{data.Container.IconTypeClass}.g.cs", iconType);
         context.AddSource($"{data.Container.ContainingNamespace}.{data.Container.IconTypeMappingClass}.g.cs", mapping);
