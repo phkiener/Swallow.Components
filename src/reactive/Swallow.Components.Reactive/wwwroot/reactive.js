@@ -7,7 +7,7 @@
         await triggerInteraction(scriptTag.previousElementSibling, null);
         scriptTag.remove();
 
-        const allFragments = document.querySelectorAll("[_srx-fragment]");
+        const allFragments = document.querySelectorAll("[srx-fragment]");
         if (fragment === allFragments[allFragments.length - 1]) {
             const trailingComments = [...document.childNodes].filter(n => n.nodeType === Node.COMMENT_NODE);
             for (const trailingComment of trailingComments) {
@@ -30,7 +30,7 @@
         }
 
         if (response.error) {
-            targetElement.setAttribute("_srx-error", "");
+            targetElement.setAttribute("srx-error", "");
 
             const errorContainer = targetElement.querySelector("& > .srx-error");
             if (errorContainer) {
@@ -41,7 +41,7 @@
 
     async function fetchResponse(targetElement, triggeringEvent) {
         const formData = buildForm(targetElement, triggeringEvent);
-        const route = targetElement.getAttribute("_srx-route");
+        const route = targetElement.getAttribute("srx-route");
 
         try {
             const response = await fetch(route, { method: "POST", body: formData });
@@ -189,7 +189,7 @@
     }
 
     function onReactiveElementTriggered(evnt) {
-        const container = evnt.currentTarget.closest("[_srx-fragment]");
+        const container = evnt.currentTarget.closest("[srx-fragment]");
         const dispatchInfo = { element: evnt.currentTarget.getAttribute("_srx-path"), event: evnt };
 
         evnt.preventDefault();

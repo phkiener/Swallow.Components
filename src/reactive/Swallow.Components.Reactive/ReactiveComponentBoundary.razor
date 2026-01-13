@@ -1,9 +1,6 @@
 @using Swallow.Components.Reactive.Rendering
 
-<div style="display: contents"
-     _srx-fragment
-     _srx-route="@targetUrl">
-
+<div style="display: contents" srx-fragment srx-route="@targetUrl">
     <AntiforgeryMetadata />
     <ComponentParameterMetadata Parameters="@ComponentParameters.AsReadOnly()" />
 
