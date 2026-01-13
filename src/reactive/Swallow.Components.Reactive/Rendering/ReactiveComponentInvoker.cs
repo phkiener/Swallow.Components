@@ -112,25 +112,25 @@ internal sealed class ReactiveComponentInvoker(
 
     private static DispatchedEvent? ReadEvent(IFormCollection form)
     {
-        if (form.TryGetValue("_srx-path", out var path) && form.TryGetValue("_srx-event", out var eventName))
+        if (form.TryGetValue(Constants.TriggeringElement, out var path) && form.TryGetValue(Constants.TriggeringEventName, out var eventName))
         {
             return new DispatchedEvent(
                 Element: path.ToString(),
                 Event: eventName.ToString(),
-                EventBody: form.TryGetValue("_srx-event-body", out var eventBody) ? eventBody.ToString() : null);
+                EventBody: form.TryGetValue(Constants.TriggeringEventBody, out var eventBody) ? eventBody.ToString() : null);
         }
 
         return null;
     }
 
-    private static IDictionary<string, object?> ReadComponentParameters(Type componentType, IFormCollection form)
+    private static Dictionary<string, object?> ReadComponentParameters(Type componentType, IFormCollection form)
     {
         var targetProperties = componentPropertyCache.GetOrAdd(componentType, ResolveComponentProperties);
 
         var parameters = new Dictionary<string, object?>();
         foreach (var property in targetProperties)
         {
-            if (form.TryGetValue($"_srx-parameter-{property.Name}", out var serializedValue))
+            if (form.TryGetValue($"{Constants.ParameterPrefix}{property.Name}", out var serializedValue))
             {
                 parameters[property.Name] = Serialization.DeserializeJson(serializedValue.ToString(), property.PropertyType);
             }

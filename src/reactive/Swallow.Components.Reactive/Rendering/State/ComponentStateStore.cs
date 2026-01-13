@@ -11,9 +11,9 @@ internal sealed class ComponentStateStore : IPersistentComponentStateStore
     {
         currentState.Clear();
 
-        foreach (var (key, value) in form.Where(static kvp => kvp.Key.StartsWith("_srx-state-")))
+        foreach (var (key, value) in form.Where(static kvp => kvp.Key.StartsWith(Constants.StatePrefix)))
         {
-            var storeKey = key["_srx-state-".Length..];
+            var storeKey = key[Constants.StatePrefix.Length..];
             var storeValue = Serialization.DeserializeBinary(value.ToString());
 
             currentState[storeKey] = storeValue;
