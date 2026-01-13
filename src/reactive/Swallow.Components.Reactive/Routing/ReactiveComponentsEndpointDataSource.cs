@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Swallow.Components.Reactive.Framework;
 
@@ -26,7 +25,6 @@ internal sealed class ReactiveComponentEndpointOptions
 public sealed class ReactiveComponentsEndpointDataSource : EndpointDataSource
 {
     private readonly IServiceProvider serviceProvider;
-    private readonly ILogger<ReactiveComponentsEndpointDataSource> logger;
     private readonly IEndpointRouteBuilder endpointRouteBuilder;
     private readonly ReactiveComponentEndpointOptions endpointOptions = new();
     private readonly Lock lockObject = new();
@@ -46,13 +44,9 @@ public sealed class ReactiveComponentsEndpointDataSource : EndpointDataSource
     /// <summary>
     /// Create a new instance of the <see cref="ReactiveComponentsEndpointDataSource"/>.
     /// </summary>
-    public ReactiveComponentsEndpointDataSource(
-        IServiceProvider serviceProvider,
-        ILogger<ReactiveComponentsEndpointDataSource> logger,
-        IEndpointRouteBuilder endpointRouteBuilder)
+    public ReactiveComponentsEndpointDataSource(IServiceProvider serviceProvider, IEndpointRouteBuilder endpointRouteBuilder)
     {
         this.serviceProvider = serviceProvider;
-        this.logger = logger;
         this.endpointRouteBuilder = endpointRouteBuilder;
 
         ConventionBuilder = new ReactiveComponentsEndpointConventionBuilder(
@@ -134,7 +128,7 @@ public sealed class ReactiveComponentsEndpointDataSource : EndpointDataSource
         endpointBuilder.DisplayName = $"{endpointBuilder.RoutePattern.RawText} ({targetType.Name})";
 
         endpointBuilder.CopyAttributeMetadata(targetType, static a => a is not ReactiveComponentAttribute and not RouteAttribute);
-        endpointBuilder.ApplyResourceCollectionMetadata(endpointRouteBuilder, endpointOptions.StaticAssetManifestPath, logger);
+        endpointBuilder.ApplyResourceCollectionMetadata(endpointRouteBuilder, endpointOptions.StaticAssetManifestPath);
 
         endpointBuilder.Metadata.Add(new SuppressLinkGenerationMetadata());
         endpointBuilder.Metadata.Add(new RequireAntiforgeryTokenAttribute());

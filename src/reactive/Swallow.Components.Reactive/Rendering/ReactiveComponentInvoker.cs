@@ -4,7 +4,6 @@ using System.Net.Mime;
 using System.Reflection;
 using System.Text;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Http;
@@ -13,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using Swallow.Components.Reactive.Rendering;
 using Swallow.Components.Reactive.Rendering.EventHandlers;
 using Swallow.Components.Reactive.Rendering.State;
+using Swallow.Components.Reactive.Shims;
 
 namespace Swallow.Components.Reactive.Framework;
 
@@ -24,8 +24,6 @@ internal sealed class ReactiveComponentInvoker(
     ILogger<ReactiveComponentInvoker> logger)
 {
     private static readonly ConcurrentDictionary<Type, PropertyInfo[]> componentPropertyCache = new();
-    private static readonly Type? FormDataProvider = typeof(IRazorComponentEndpointInvoker).Assembly.GetType("Microsoft.AspNetCore.Components.Endpoints.HttpContextFormDataProvider");
-    private static MethodInfo? SetFormDataMethod;
 
     public async Task InvokeAsync(Type componentType, HttpContext context)
     {
@@ -148,24 +146,15 @@ internal sealed class ReactiveComponentInvoker(
         return properties;
     }
 
-    private void PopulateFormDataProvider(IFormCollection form, IServiceProvider serviceProvider)
+    private static void PopulateFormDataProvider(IFormCollection form, IServiceProvider serviceProvider)
     {
         // This needs to be done to initialize the SupplyParameterFromForm cascading parameter.
-        // But Microsoft doesn't expose it, it's hidden in the EndpointHtmlRenderer. So.. we'll
-        // need a bit of help to invoke it.
-        SetFormDataMethod ??= FormDataProvider?.GetMethod("SetFormData");
-        if (FormDataProvider is null || SetFormDataMethod is null)
+        var formDataProvider = HttpContextFormDataProvider.TryGet(serviceProvider);
+
+        var formHandlerName = form["_handler"];
+        if (formHandlerName.Count is 1)
         {
-            logger.LogWarning("Could not retrieve HttpContextFormDataProvider via reflection; [SupplyParameterFromForm] parameters might not be available.");
-        }
-        else
-        {
-            var formHandlerName = form["_handler"];
-            var formDataProvider = serviceProvider.GetService(FormDataProvider);
-            if (formDataProvider is not null && formHandlerName.Count is 1)
-            {
-                SetFormDataMethod.Invoke(formDataProvider, [formHandlerName[0], form.ToDictionary().AsReadOnly(), form.Files]);
-            }
+            formDataProvider?.SetFormData(formHandlerName[0]!, form.ToDictionary().AsReadOnly(), form.Files);
         }
     }
 
