@@ -1,0 +1,33 @@
+.sw-field {
+    display: flex;
+    flex-direction: column;
+
+    gap: 0.5rem;
+    align-items: stretch;
+    justify-content: flex-start;
+}
+
+.sw-field-required > .sw-field-label:after {
+    content: "*";
+    color: red;
+    margin-left: 0.25rem;
+}
+
+.sw-field > .sw-field-description {
+    font-size: smaller;
+    font-weight: lighter;
+    color: color-mix(in srgb, light-dark(black, white) 70%, transparent);
+}
+
+.sw-field > .sw-field-error {
+    font-size: smaller;
+    color: red;
+}
+
+.sw-field > .sw-field-description:empty {
+    display: none;
+}
+
+.sw-field > .sw-field-error:empty {
+    display: none;
+}
