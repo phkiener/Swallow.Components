@@ -57,19 +57,33 @@ This is the main page.
     <span>@currentInput</span>
 </p>
 
-<p style="display: flex; flex-direction: column; gap: 1rem; align-items: flex-start">
+<SwFieldset style="padding: 10px;">
     <SwFormField Required>
         <Label>A field</Label>
-        <ChildContent><SwInputText @bind-Value="currentInput" /></ChildContent>
+        <ChildContent><SwInputText @bind-Value="currentInput"/></ChildContent>
         <Description>This is a fancy field</Description>
         <Error>Oh no, something went wrong!</Error>
     </SwFormField>
 
     <SwFormField>
         <Label>An optional field</Label>
-        <ChildContent><SwInputText @bind-Value="currentInput" /></ChildContent>
+        <ChildContent><SwInputText @bind-Value="currentInput"/></ChildContent>
     </SwFormField>
-</p>
+</SwFieldset>
+
+<SwFieldset Orientation="Orientation.Horizontal" style="padding: 10px;">
+    <SwFormField Required>
+        <Label>A field</Label>
+        <ChildContent><SwInputText @bind-Value="currentInput"/></ChildContent>
+        <Description>This is a fancy field</Description>
+        <Error>Oh no, something went wrong!</Error>
+    </SwFormField>
+
+    <SwFormField>
+        <Label>An optional field</Label>
+        <ChildContent><SwInputText @bind-Value="currentInput"/></ChildContent>
+    </SwFormField>
+</SwFieldset>
 
 @code {
 

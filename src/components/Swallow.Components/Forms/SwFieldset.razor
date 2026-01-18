@@ -1,0 +1,12 @@
+@{
+    var orientationClass = Orientation switch
+    {
+        Orientation.Vertical => "sw-fieldset-vertical",
+        Orientation.Horizontal => "sw-fieldset-horizontal",
+        _ => null
+    };
+}
+
+<div @attributes="AdditionalAttributes" class="@(orientationClass)">
+    @ChildContent
+</div>

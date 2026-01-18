@@ -1,3 +1,19 @@
+.sw-fieldset-vertical {
+    display: flex;
+    flex-direction: column;
+
+    gap: 1rem;
+    align-items: stretch;
+    justify-content: flex-start;
+}
+
+.sw-fieldset-horizontal {
+    display: grid;
+    grid-template-columns: max-content min-content max-content;
+    row-gap: 1rem;
+    column-gap: 1rem;
+}
+
 .sw-field {
     display: flex;
     flex-direction: column;
@@ -5,6 +21,40 @@
     gap: 0.5rem;
     align-items: stretch;
     justify-content: flex-start;
+}
+
+.sw-fieldset-horizontal > .sw-field {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-row: span 1;
+
+    grid-template-columns: subgrid;
+    grid-template-rows: max-content max-content;
+
+    gap: unset;
+    row-gap: 0.5rem;
+    align-items: center;
+    justify-content: stretch;
+}
+
+.sw-fieldset-horizontal > .sw-field > .sw-field-label {
+    grid-row: 1;
+    grid-column: 1;
+}
+
+.sw-fieldset-horizontal > .sw-field > .sw-field-input {
+    grid-row: 1;
+    grid-column: 2;
+}
+
+.sw-fieldset-horizontal > .sw-field > .sw-field-description {
+    grid-row: 1;
+    grid-column: 3;
+}
+
+.sw-fieldset-horizontal > .sw-field > .sw-field-error {
+    grid-row: 2;
+    grid-column: 2 / -1;
 }
 
 .sw-field-required > .sw-field-label:after {

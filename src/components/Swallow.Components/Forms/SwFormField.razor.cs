@@ -46,7 +46,7 @@ public sealed partial class SwFormField : ComponentBase
     public RenderFragment? Error { get; set; }
 
     /// <summary>
-    /// Additional HTML attributes to render onto the button.
+    /// Additional HTML attributes to render onto the outermost element.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
     public IDictionary<string, object?>? AdditionalAttributes { get; set; }

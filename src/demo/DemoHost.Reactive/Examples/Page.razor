@@ -29,7 +29,7 @@
 </script>
 
 <div>
-    <button type="button" @onclick="@(() => throw new NotImplementedException())">Crash and burn :)</button>
+    <button type="button" @onclick="@((MouseEventArgs _) => throw new NotImplementedException())">Crash and burn :)</button>
     <button type="button" @onclick="@(() => Crash = true)">Crash during rendering</button>
 </div>
 
