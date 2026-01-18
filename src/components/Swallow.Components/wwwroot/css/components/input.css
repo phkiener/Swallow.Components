@@ -19,15 +19,42 @@
     border-color: light-dark(lightgray, darkgray);
 
     background: transparent;
+
+    display: flex;
+    flex-direction: row;
+    gap: 0.25rem;
+
+    align-items: center;
+    justify-content: center;
+
+    overflow: hidden;
+    text-overflow: ellipsis ellipsis;
 }
 
-.sw-input[sw-stretch] {
-    align-self: stretch;
-    width: 100%;
+.sw-input:not(input, textarea, select) {
+    width: max-content;
+}
+
+.sw-input:has(:nth-child(2)) {
+    padding-inline: 0.5rem;
 }
 
 .sw-input:focus-visible {
     border-color: light-dark(black, white);
     outline-offset: 0;
     outline: light-dark(black, white) solid 1px;
+}
+
+.sw-input > input {
+    appearance: none !important;
+    background: none !important;
+    border: none !important;
+    outline: none !important;
+}
+
+.sw-input > span {
+    display: contents;
+    font-size: smaller;
+    font-weight: lighter;
+    color: color-mix(in srgb, light-dark(black, white) 70%, transparent);
 }

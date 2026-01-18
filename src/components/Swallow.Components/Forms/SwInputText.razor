@@ -1,7 +1,24 @@
 @inherits InputBase<string?>
 
-<input type="text"
-       @attributes="@AdditionalAttributes"
-       name="@NameAttributeValue"
-       class="@CssClass sw-input"
-       @bind="CurrentValueAsString" />
+<div class="sw-input @CssClass">
+    @if (Prefix is not null)
+    {
+        <span>@Prefix</span>
+    }
+
+    <input type="text"
+           @attributes="@AdditionalAttributes"
+           name="@NameAttributeValue"
+           @bind="CurrentValueAsString"/>
+
+
+    @if (Suffix is not null)
+    {
+        <span>@Suffix</span>
+    }
+
+    @if (Action is not null)
+    {
+        <span>@Action</span>
+    }
+</div>

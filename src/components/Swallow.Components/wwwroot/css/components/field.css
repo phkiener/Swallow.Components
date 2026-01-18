@@ -21,6 +21,8 @@
     gap: 0.5rem;
     align-items: stretch;
     justify-content: flex-start;
+
+    width: max-content;
 }
 
 .sw-fieldset-horizontal > .sw-field {

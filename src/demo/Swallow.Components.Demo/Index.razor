@@ -53,35 +53,48 @@ This is the main page.
 </p>
 
 <p style="display: flex; flex-direction: row; gap: 1ch; align-items: center">
-    <SwInputText @bind-Value="currentInput" />
+    <SwPlainInputText @bind-Value="currentInput" />
     <span>@currentInput</span>
 </p>
 
 <SwFieldset style="padding: 10px;">
     <SwFormField Required>
         <Label>A field</Label>
-        <ChildContent><SwInputText @bind-Value="currentInput"/></ChildContent>
+        <ChildContent><SwPlainInputText @bind-Value="currentInput"/></ChildContent>
         <Description>This is a fancy field</Description>
         <Error>Oh no, something went wrong!</Error>
     </SwFormField>
 
     <SwFormField>
         <Label>An optional field</Label>
-        <ChildContent><SwInputText @bind-Value="currentInput"/></ChildContent>
+        <ChildContent><SwPlainInputText @bind-Value="currentInput"/></ChildContent>
+    </SwFormField>
+
+    <SwFormField>
+        <Label>An optional field</Label>
+        <ChildContent>
+            <SwInputText @bind-Value="currentInput">
+                <Prefix><SwIcon Icon="IconType.Album" /></Prefix>
+                <Suffix>Stars</Suffix>
+                <Action>
+                    <SwIcon Icon="IconType.AArrowUp" />
+                </Action>
+            </SwInputText>
+        </ChildContent>
     </SwFormField>
 </SwFieldset>
 
 <SwFieldset Orientation="Orientation.Horizontal" style="padding: 10px;">
     <SwFormField Required>
         <Label>A field</Label>
-        <ChildContent><SwInputText @bind-Value="currentInput"/></ChildContent>
+        <ChildContent><SwPlainInputText @bind-Value="currentInput"/></ChildContent>
         <Description>This is a fancy field</Description>
         <Error>Oh no, something went wrong!</Error>
     </SwFormField>
 
     <SwFormField>
         <Label>An optional field</Label>
-        <ChildContent><SwInputText @bind-Value="currentInput"/></ChildContent>
+        <ChildContent><SwPlainInputText @bind-Value="currentInput"/></ChildContent>
     </SwFormField>
 </SwFieldset>
 
