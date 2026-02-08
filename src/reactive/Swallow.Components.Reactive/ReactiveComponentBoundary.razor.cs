@@ -12,6 +12,7 @@ public sealed partial class ReactiveComponentBoundary(NavigationManager navigati
     internal const string HasPrerenderedStateMarker = "_srx-prerender-state";
 
     private string? targetUrl;
+    private string identifier = "srx-" + Guid.NewGuid().ToString("N");
 
     /// <summary>
     /// The component to render reactively; needs to have the

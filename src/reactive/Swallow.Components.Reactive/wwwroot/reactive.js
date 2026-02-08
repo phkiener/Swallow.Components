@@ -123,7 +123,11 @@
         const parser = new DOMParser();
         const document = parser.parseFromString(content, "text/html");
 
-        placeContentIntoFragment(targetElement, document.body);
+        const headContent = document.body.querySelector(".srx-head-content");
+        const mainContent = document.body.querySelector(".srx-content");
+
+        updateHeadContent(window.document.head, headContent, targetElement.id);
+        placeContentIntoFragment(targetElement, mainContent);
 
         [...document.head.querySelectorAll("meta[itemprop='event-handler']")]
             .forEach(meta => registerEventHandler(targetElement, meta.getAttribute("data-element"), meta.getAttribute("data-event")));
@@ -152,6 +156,15 @@
             duplicatedScript.async = false;
 
             script.replaceWith(duplicatedScript);
+        }
+    }
+
+    function updateHeadContent(target, content, marker) {
+        target.querySelectorAll(`[srx-fragment='${marker}']`).forEach(i => i.remove());
+
+        for (const element of [...content.children]) {
+            element.setAttribute("srx-fragment", marker);
+            target.insertAdjacentElement("afterbegin", element);
         }
     }
 
