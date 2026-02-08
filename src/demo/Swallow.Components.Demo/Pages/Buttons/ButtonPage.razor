@@ -1,0 +1,26 @@
+@page "/buttons/button"
+@using Microsoft.AspNetCore.Components.Web
+@using Swallow.Components.Buttons
+
+<PageTitle>Swallow.Components - Button</PageTitle>
+
+<p style="display: flex; flex-direction: row; gap: 1ch; align-items: center">
+    @foreach (var size in Enum.GetValues<ButtonSize>())
+    {
+        <SwButton Size="@size">@size</SwButton>
+    }
+</p>
+
+<p style="display: flex; flex-direction: row; gap: 1ch; align-items: center">
+    @foreach (var variant in Enum.GetValues<ButtonVariant>())
+    {
+        <SwButton Variant="@variant">@variant</SwButton>
+    }
+</p>
+
+<p style="display: flex; flex-direction: row; gap: 1ch; align-items: center">
+    @foreach (var rounding in Enum.GetValues<ButtonRounding>())
+    {
+        <SwButton Rounding="@rounding">@rounding</SwButton>
+    }
+</p>
