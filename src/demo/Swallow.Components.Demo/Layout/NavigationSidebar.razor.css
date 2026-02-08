@@ -1,0 +1,16 @@
+li {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+
+    text-align: left;
+}
+
+li > ::deep a {
+    justify-content: flex-start;
+}
+
+li > ::deep a[data-active] {
+    background-color: var(--color-bg-hover);
+}

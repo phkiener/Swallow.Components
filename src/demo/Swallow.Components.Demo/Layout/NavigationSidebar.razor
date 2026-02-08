@@ -1,4 +1,5 @@
-@using Microsoft.AspNetCore.Components.Routing
+@using Swallow.Components.Buttons
+@inject NavigationManager NavigationManager
 
 <nav>
     @foreach (var group in NavigationProvider.Sections)
@@ -9,7 +10,15 @@
                 <li>
                     @foreach (var entry in group.Entries)
                     {
-                        <NavLink href="@entry.Url">@entry.Name</NavLink>
+                        var linkUri = NavigationManager.ToAbsoluteUri(entry.Url);
+                        var isActive = linkUri.AbsoluteUri == NavigationManager.Uri;
+
+                        <SwLinkButton Href="@entry.Url"
+                                      Size="ButtonSize.Smaller"
+                                      Variant="ButtonVariant.Ghost"
+                                      data-active="@isActive">
+                            @entry.Name
+                        </SwLinkButton>
                     }
                 </li>
             </ul>
