@@ -38,7 +38,7 @@ public sealed class ComponentRouteGenerator : IIncrementalGenerator
                 writer.WriteLine($"// {group.Key}");
                 foreach (var component in group)
                 {
-                    writer.WriteLine($"// {component.Component.Name}");
+                    writer.WriteLine($"// {component.Component.Name} -> {component.RouteTemplate}");
                 }
 
                 writer.WriteLine();
