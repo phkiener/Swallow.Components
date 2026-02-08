@@ -1,0 +1,20 @@
+@using Swallow.Components.Buttons
+@inject NavigationManager NavigationManager
+
+<li class="@(isActive ? "active" : null)">
+    <SwLinkButton Href="@Link.Url">@Link.Name</SwLinkButton>
+</li>
+
+@code {
+    private bool isActive = false;
+
+    [Parameter]
+    [EditorRequired]
+    public required NavigationItem.Link Link { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        var linkUri = NavigationManager.ToAbsoluteUri(Link.Url);
+        isActive = linkUri.AbsoluteUri == NavigationManager.Uri;
+    }
+}

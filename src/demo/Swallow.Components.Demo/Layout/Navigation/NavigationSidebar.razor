@@ -1,0 +1,17 @@
+@using Swallow.Components.Buttons
+<nav>
+    <SwButtonGroup Size="ButtonSize.Smaller" Variant="ButtonVariant.Ghost">
+        @foreach (var group in NavigationProvider.Sections)
+        {
+            <section>
+                <header>@group.Header.Name</header>
+                <ul>
+                    @foreach (var entry in group.Entries)
+                    {
+                        <NavigationLink Link="entry"/>
+                    }
+                </ul>
+            </section>
+        }
+    </SwButtonGroup>
+</nav>

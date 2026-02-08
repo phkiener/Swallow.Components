@@ -1,4 +1,4 @@
-namespace Swallow.Components.Demo.Layout;
+namespace Swallow.Components.Demo.Layout.Navigation;
 
 /// <summary>
 /// A section for the navigation.
