@@ -27,6 +27,9 @@
     <Project Path="src/reactive/Swallow.Components.Reactive.Abstractions/Swallow.Components.Reactive.Abstractions.csproj" />
     <Project Path="src/reactive/Swallow.Components.Reactive/Swallow.Components.Reactive.csproj" />
   </Folder>
+  <Folder Name="/Packages/Utilities/">
+    <Project Path="src/utilities/Swallow.Components.RouteGenerator/Swallow.Components.RouteGenerator.csproj" />
+  </Folder>
   <Folder Name="/Tooling/">
     <Project Path="src/tooling/IconMappingGenerator/IconMappingGenerator.csproj" />
   </Folder>
