@@ -1,4 +1,3 @@
-using System.CodeDom.Compiler;
 using System.Collections.Immutable;
 using IconMappingGenerator;
 using Microsoft.CodeAnalysis;
@@ -28,23 +27,15 @@ public sealed class ComponentRouteGenerator : IIncrementalGenerator
 
     private static void GenerateComponentRoutes(SourceProductionContext context, (ImmutableArray<MarkedComponent> Components, ImmutableArray<GeneratedRoutes> Outputs) parameters)
     {
+
         foreach (var output in parameters.Outputs)
         {
-            using var content = new StringWriter();
-            using var writer = new IndentedTextWriter(content);
+            var mapping = SourceCodes.IconTypeMapping(
+                containingNamespace: output.Type.ContainingNamespace.ToDisplayString(),
+                name: output.Type.Name,
+                components: parameters.Components);
 
-            foreach (var group in parameters.Components.GroupBy(static c => c.Component.ContainingNamespace, SymbolEqualityComparer.Default))
-            {
-                writer.WriteLine($"// {group.Key}");
-                foreach (var component in group)
-                {
-                    writer.WriteLine($"// {component.Component.Name} -> {component.RouteTemplate}");
-                }
-
-                writer.WriteLine();
-            }
-
-            context.AddSource($"{output.Type.ContainingNamespace}.{output.Type.Name}.g.cs", content.ToString());
+            context.AddSource($"{output.Type.ContainingNamespace}.{output.Type.Name}.g.cs", mapping);
         }
     }
 }
