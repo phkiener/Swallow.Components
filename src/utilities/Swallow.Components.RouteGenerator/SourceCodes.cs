@@ -42,11 +42,26 @@ internal static class SourceCodes
             {
                 foreach (var component in components)
                 {
+                    var componentNamespace = component.Component.ContainingNamespace.ToDisplayString();
+                    var partialNamespace = RemovePrefix(componentNamespace, containingNamespace);
+
+                    var blocks = new Stack<IDisposable>();
+                    foreach (var segment in partialNamespace.Split(['.'], StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        writer.WriteLine($"public static partial class {segment}");
+                        blocks.Push(writer.BeginBlock());
+                    }
+
                     writer.WriteLine("/// <summary>");
                     writer.WriteLine($"/// A route that will lead to <see cref=\"{component.Component.ContainingNamespace.ToDisplayString()}.{component.Component.Name}\" />");
                     writer.WriteLine("/// </summary>");
                     writer.WriteLine($"public static string {component.Component.Name} => \"{component.RouteTemplate}\";");
                     writer.WriteLine();
+
+                    foreach (var block in blocks)
+                    {
+                        block.Dispose();
+                    }
                 }
             }
         }
@@ -70,5 +85,10 @@ internal static class SourceCodes
             writer.Indent -= 1;
             writer.WriteLine("}");
         }
+    }
+
+    private static string RemovePrefix(string text, string prefix)
+    {
+        return text.StartsWith(prefix) ? text.Substring(prefix.Length) : text;
     }
 }
