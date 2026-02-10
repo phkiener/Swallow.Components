@@ -57,6 +57,11 @@ internal sealed class HandlerRegistration
                     scopeTracker.Current.AddHandler(frame.AttributeEventHandlerId, frame.AttributeName);
                 }
 
+                if (frame.FrameType is RenderTreeFrameType.Attribute && frame.AttributeName is "id")
+                {
+                    scopeTracker.Current.SetId(frame.AttributeValue);
+                }
+
                 scopeTracker.TrackStep();
             }
         }

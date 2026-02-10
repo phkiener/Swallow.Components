@@ -9,6 +9,7 @@ internal sealed class EventTreeNode(string tag, int componentId)
 {
     private readonly record struct ComponentEventHandler(ulong EventHandlerId, string EventName);
 
+    private string? id;
     private readonly string tagName = tag;
     private readonly int componentId = componentId;
     private readonly List<EventTreeNode> children = [];
@@ -28,6 +29,11 @@ internal sealed class EventTreeNode(string tag, int componentId)
         handlers.Add(handler);
     }
 
+    public void SetId(object idAttribute)
+    {
+        id = idAttribute.ToString();
+    }
+
     public IEnumerable<ComponentEventDescriptor> EnumerateDescriptors()
     {
         return EnumerateDescriptors(tagName);
@@ -35,6 +41,11 @@ internal sealed class EventTreeNode(string tag, int componentId)
 
     private IEnumerable<ComponentEventDescriptor> EnumerateDescriptors(string prefix)
     {
+        if (id is not null)
+        {
+            prefix = $"#{id}";
+        }
+
         var directDescriptors = handlers.Select(h => new ComponentEventDescriptor(h.EventHandlerId, componentId, h.EventName, prefix));
         var descendantDescriptors = new List<IEnumerable<ComponentEventDescriptor>>();
 

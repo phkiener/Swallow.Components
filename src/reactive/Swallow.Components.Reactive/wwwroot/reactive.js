@@ -181,9 +181,15 @@
     }
 
     function resolveElement(targetElement, path) {
-        let element = targetElement.querySelector("& > .srx-content");
+        let element = targetElement;
+
         for (const segment of path.split("/")) {
             if (segment === "") {
+                continue;
+            }
+
+            if (segment.startsWith("#")) {
+                element = element.querySelector(segment);
                 continue;
             }
 
