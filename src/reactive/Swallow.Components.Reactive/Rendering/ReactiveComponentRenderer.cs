@@ -26,15 +26,18 @@ internal class ReactiveComponentRenderer(IServiceProvider serviceProvider, ILogg
     };
 
     private readonly IServiceProvider serviceProvider = serviceProvider;
+    private readonly MemoizingDispatcher dispatcher = new(Dispatcher.CreateDefault());
+
     private ResourceAssetCollection? resourceCollection;
     private int? rootComponentId;
     private int? fragmentComponentId;
 
+    public override Dispatcher Dispatcher => dispatcher;
+
     protected override RendererInfo RendererInfo => new("static-interactive", true);
+    protected override ResourceAssetCollection Assets => resourceCollection ?? base.Assets;
 
     protected override IComponentRenderMode GetComponentRenderMode(IComponent component) => RenderMode.StaticReactive;
-
-    protected override ResourceAssetCollection Assets => resourceCollection ?? base.Assets;
 
     protected override ComponentState CreateComponentState(int componentId, IComponent component, ComponentState? parentComponentState)
     {
@@ -130,6 +133,11 @@ internal class ReactiveComponentRenderer(IServiceProvider serviceProvider, ILogg
             : eventArgs;
     }
 
+    public Task ProcessPendingTasksAsync()
+    {
+        return dispatcher.ProcessAsync();
+    }
+
     public void WriteHtmlTo(TextWriter output)
     {
         if (rootComponentId is null)
@@ -139,5 +147,56 @@ internal class ReactiveComponentRenderer(IServiceProvider serviceProvider, ILogg
 
         ProcessPendingRender();
         WriteComponentHtml(rootComponentId.Value, output);
+    }
+
+    private sealed class MemoizingDispatcher(Dispatcher actualDispatcher) : Dispatcher
+    {
+        private readonly List<Task> pendingTasks = [];
+
+        public override bool CheckAccess()
+        {
+            return actualDispatcher.CheckAccess();
+        }
+
+        public override Task InvokeAsync(Action workItem)
+        {
+            var task = actualDispatcher.InvokeAsync(workItem);
+            pendingTasks.Add(task);
+
+            return task;
+        }
+
+        public override Task InvokeAsync(Func<Task> workItem)
+        {
+            var task = actualDispatcher.InvokeAsync(workItem);
+            pendingTasks.Add(task);
+
+            return task;
+        }
+
+        public override Task<TResult> InvokeAsync<TResult>(Func<TResult> workItem)
+        {
+            var task = actualDispatcher.InvokeAsync(workItem);
+            pendingTasks.Add(task);
+
+            return task;
+        }
+
+        public override Task<TResult> InvokeAsync<TResult>(Func<Task<TResult>> workItem)
+        {
+            var task = actualDispatcher.InvokeAsync(workItem);
+            pendingTasks.Add(task);
+
+            return task;
+        }
+
+        public async Task ProcessAsync()
+        {
+            while (pendingTasks.Any())
+            {
+                await Task.WhenAny(pendingTasks);
+                pendingTasks.RemoveAll(static t => t.IsCompleted || t.IsFaulted || t.IsCanceled);
+            }
+        }
     }
 }

@@ -103,9 +103,10 @@ internal sealed class ReactiveComponentInvoker(
 
                 return;
             }
-
-            renderer.WriteHtmlTo(responseWriter);
         });
+
+        await renderer.ProcessPendingTasksAsync();
+        await renderer.Dispatcher.InvokeAsync(() => renderer.WriteHtmlTo(responseWriter));
     }
 
     private static DispatchedEvent? ReadEvent(IFormCollection form)

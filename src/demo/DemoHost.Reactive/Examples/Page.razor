@@ -31,6 +31,13 @@
 <div>
     <button type="button" @onclick="@((MouseEventArgs _) => throw new NotImplementedException())">Crash and burn :)</button>
     <button type="button" @onclick="@(() => Crash = true)">Crash during rendering</button>
+    <button type="button" id="fire-and-forget" @onclick="@(FireAndForget)">Invoke fire-and-forget task</button>
+
+    @if (DidWait)
+    {
+        <span>I did wait for the task, yay.</span>
+    }
+
 </div>
 
 @if (Crash)
@@ -41,8 +48,20 @@
 @code {
 
     public bool Crash { get; set; }
+    public bool DidWait { get; set; }
 
     [PersistentState]
     public int Counter { get; set; }
+
+    private void FireAndForget()
+    {
+        _ = InvokeAsync(async () =>
+        {
+            await Task.Delay(1000);
+            DidWait = true;
+
+            StateHasChanged();
+        });
+    }
 
 }

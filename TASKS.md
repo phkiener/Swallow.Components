@@ -9,7 +9,6 @@
 - Can we do URLs based on `{type}/{trigger}/{event}`?
   - This makes more sense with identifiers, tho
 - Handle `@key` in identifiers, too?
-- Asynchronous processing, we need a way to wait for these tasks
 
 ## Components
 
