@@ -9,6 +9,7 @@
     <File Path="LICENSE.txt" />
     <File Path="NuGet.config" />
     <File Path="README.md" />
+    <File Path="TASKS.md" />
     <File Path="THIRDPARTY.md" />
   </Folder>
   <Folder Name="/Demo/">
