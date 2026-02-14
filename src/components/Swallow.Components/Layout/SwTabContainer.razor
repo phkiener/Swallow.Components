@@ -1,0 +1,37 @@
+<CascadingValue Value="@this" IsFixed ChildContent="@ChildContent" />
+
+<div class="sw tab-container" role="tablist">
+    <header>
+        @foreach (var tab in registeredTabs)
+        {
+            <label role="tab">
+                @tab.Title
+
+                <input type="radio"
+                       name="@fieldIdentifier.FieldName"
+                       value="@tab.Identifier"
+                       checked="@(tab.Identifier == ActiveTab)"
+                       data-register="@(!RendererInfo.IsInteractive)"
+                       @onchange="@(SwitchTabAsync)">
+            </label>
+        }
+    </header>
+
+    <div role="tabpanel">
+        @foreach (var tab in registeredTabs)
+        {
+            if (tab.Identifier == ActiveTab)
+            {
+                <div data-identifier="@tab.Identifier">
+                    @tab.Content
+                </div>
+            }
+            else
+            {
+                <div data-identifier="@tab.Identifier" aria-hidden="true" hidden>
+                    @tab.Content
+                </div>
+            }
+        }
+    </div>
+</div>

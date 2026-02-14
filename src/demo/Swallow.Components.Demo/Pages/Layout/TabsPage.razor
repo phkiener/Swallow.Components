@@ -1,0 +1,23 @@
+@using Swallow.Components.Buttons
+@using Swallow.Components.Layout
+
+<SwTabContainer @bind-ActiveTab="ActiveTab">
+    <SwTab Identifier="first">
+        <Title>First</Title>
+        <Content>This is the first content :)</Content>
+    </SwTab>
+
+    <SwTab Identifier="second">
+        <Title>Second</Title>
+        <Content>This is the second content :)</Content>
+    </SwTab>
+
+    <SwTab Identifier="third">
+        <Title>Third</Title>
+        <Content>This is the third content :)</Content>
+    </SwTab>
+</SwTabContainer>
+
+<SwButton OnClick="@(() => { })">
+    Button to force a refresh
+</SwButton>

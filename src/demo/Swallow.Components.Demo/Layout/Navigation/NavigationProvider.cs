@@ -42,6 +42,8 @@ public static class NavigationProvider
         yield return new NavigationItem.Link("Button", Routes.Pages.Buttons.ButtonPage);
         yield return new NavigationItem.Link("Link Button", Routes.Pages.Buttons.LinkButtonPage);
         yield return new NavigationItem.Link("Icon Button", Routes.Pages.Buttons.IconButtonPage);
+        yield return new NavigationItem.Header("Layout");
+        yield return new NavigationItem.Link("Tabs", Routes.Pages.Layout.TabsPage);
     }
 
     private static IEnumerable<NavigationSection> EnumerateSections()
