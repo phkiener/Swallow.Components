@@ -5,3 +5,4 @@
 @import "components/button.css" layer(component);
 @import "components/field.css" layer(component);
 @import "components/input.css" layer(component);
+@import "components/tabs.css" layer(component);

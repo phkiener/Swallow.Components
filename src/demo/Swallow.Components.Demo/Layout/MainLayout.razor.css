@@ -48,6 +48,10 @@ main {
     overflow: auto;
 }
 
+article {
+    width: 120ch;
+}
+
 @media screen and (prefers-reduced-motion: reduce), (update: slow) {
     #app {
         transition-duration: 0s;

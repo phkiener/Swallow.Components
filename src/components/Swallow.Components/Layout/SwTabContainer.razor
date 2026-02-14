@@ -5,8 +5,7 @@
         @foreach (var tab in registeredTabs)
         {
             <label role="tab">
-                @tab.Title
-
+                <span>@tab.Title</span>
                 <input type="radio"
                        name="@fieldIdentifier.FieldName"
                        value="@tab.Identifier"
