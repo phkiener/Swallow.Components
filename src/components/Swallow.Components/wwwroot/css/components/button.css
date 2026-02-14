@@ -1,6 +1,6 @@
 /* Common */
 
-.sw-button {
+.sw.btn {
     position: relative;
     vertical-align: middle;
     box-sizing: border-box;
@@ -32,82 +32,82 @@
     cursor: pointer;
 }
 
-.sw-button:hover:not(:disabled) {
+.sw.btn:hover:not(:disabled), .sw.btn[data-active]:not(:disabled) {
     background: var(--color-bg-hover, var(--color-bg));
 }
 
-.sw-button:focus-visible {
+.sw.btn:focus-visible, .sw.btn[data-focus] {
     outline: light-dark(black, white) solid 2px;
     outline-offset: 2px;
 }
 
-.sw-button:disabled, .sw-button[data-disabled] {
+.sw.btn:disabled, .sw.btn[data-disabled] {
     opacity: 0.5;
     cursor: not-allowed;
 }
 
 /* Size */
 
-.sw-button.sw-button-size-small {
+.sw.btn.btn-xs {
     height: 1.5rem;
     min-width: 1.5rem;
     padding-inline: 0.33rem;
     padding-block: 0.07rem;
     line-height: 1.5rem;
 
-    &.sw-button-icon {
+    &.btn-icon {
         padding-inline: 0.125rem;
         padding-block: 0.125rem;
     }
 }
 
-.sw-button.sw-button-size-smaller {
+.sw.btn.btn-s {
     height: 2rem;
     min-width: 2rem;
     padding-inline: 0.66rem;
     padding-block: 0.15rem;
     line-height: 2rem;
 
-    &.sw-button-icon {
+    &.btn-icon {
         padding-inline: 0.25rem;
         padding-block: 0.25rem;
     }
 }
 
-.sw-button.sw-button-size-normal {
+.sw.btn.sw.btn-m {
     height: 2.5rem;
     min-width: 2.5rem;
     padding-inline: 1rem;
     padding-block: 0.25rem;
     line-height: 2.5rem;
 
-    &.sw-button-icon {
+    &.btn-icon {
         padding-inline: 0.25rem;
         padding-block: 0.25rem;
     }
 }
 
-.sw-button.sw-button-size-larger {
+.sw.btn.btn-l {
     height: 3em;
     min-width: 3rem;
     padding-inline: 1.33rem;
     padding-block: 0.33rem;
     line-height: 3em;
 
-    &.sw-button-icon {
+    &.btn-icon {
         padding-inline: 0.375rem;
         padding-block: 0.375rem;
     }
 }
 
-.sw-button.sw-button-size-large {
+.sw.btn.btn-xl {
     height: 3.5em;
     min-width: 3.5rem;
     padding-inline: 1.66rem;
     padding-block: 0.66rem;
     line-height: 3.5em;
 
-    &.sw-button-icon {
+    &.sw.btn-icon {
         padding-inline: 0.5rem;
         padding-block: 0.5rem;
     }
@@ -115,7 +115,7 @@
 
 /* Variant */
 
-.sw-button.sw-button-variant-solid {
+.sw.btn.btn-vp {
     --color-bg: light-dark(black, white);
     --color-bg-hover: color-mix(in srgb, light-dark(black, white) 70%, transparent);
     --color-border: transparent;
@@ -123,7 +123,7 @@
     --color-fg: light-dark(white, black);
 }
 
-.sw-button.sw-button-variant-subtle {
+.sw.btn.btn-vs {
     --color-bg: light-dark(lightgray, darkgray);
     --color-bg-hover: color-mix(in srgb, light-dark(lightgray, darkgray) 70%, transparent);
     --color-border: transparent;
@@ -131,7 +131,7 @@
     --color-fg: light-dark(black, white);
 }
 
-.sw-button.sw-button-variant-outline {
+.sw.btn.btn-vo {
     --color-bg: transparent;
     --color-bg-hover: color-mix(in srgb, light-dark(lightgray, darkgray) 70%, transparent);
     --color-border: light-dark(lightgray, darkgray);
@@ -139,7 +139,7 @@
     --color-fg: light-dark(black, white);
 }
 
-.sw-button.sw-button-variant-ghost {
+.sw.btn.btn-vg {
     --color-bg: transparent;
     --color-bg-hover: color-mix(in srgb, light-dark(lightgray, darkgray) 70%, transparent);
     --color-border: transparent;
@@ -147,7 +147,7 @@
     --color-fg: light-dark(black, white);
 }
 
-.sw-button.sw-button-variant-plain {
+.sw.btn.btn-vt {
     --color-bg: transparent;
     --color-bg-hover: transparent;
     --color-border: transparent;
@@ -157,50 +157,50 @@
 
 /* Rounding */
 
-.sw-button.sw-button-rounding-none {
+.sw.btn.btn-rn {
     --radius-border: 0;
 }
 
-.sw-button.sw-button-rounding-small {
+.sw.btn.btn-rs {
     --radius-border: 0.25rem;
 }
 
-.sw-button.sw-button-rounding-normal {
+.sw.btn.btn-rn {
     --radius-border: 0.375rem;
 }
 
-.sw-button.sw-button-rounding-large {
+.sw.btn.btn-rl {
     --radius-border: 0.5rem;
 }
 
-.sw-button.sw-button-rounding-extra {
+.sw.btn.btn-rx {
     --radius-border: 0.75rem;
 }
 
-.sw-button.sw-button-rounding-half {
+.sw.btn.brn-rh {
     --radius-border: 1rem;
 }
 
-.sw-button.sw-button-rounding-full {
+.sw.btn.brh-rf {
     --radius-border: 9999px;
 }
 
 /* Animation */
 
-.sw-button {
+.sw.btn {
     transition-duration: 200ms;
     transition-property: color, background, border-color, outline, outline-offset;
 }
 
 @media screen and (prefers-reduced-motion: reduce), (update: slow) {
-    .sw-button {
+    .sw.btn {
         transition-duration: 0s;
     }
 }
 
 /* Content */
 
-.sw-button.sw-button-icon {
+.sw.btn.btn-icon {
     aspect-ratio: 1 / 1;
 
     & > svg {

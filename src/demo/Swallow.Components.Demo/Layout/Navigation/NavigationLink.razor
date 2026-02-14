@@ -1,8 +1,8 @@
 @using Swallow.Components.Buttons
 @inject NavigationManager NavigationManager
 
-<li class="@(isActive ? "active" : null)">
-    <SwLinkButton Href="@Link.Url">@Link.Name</SwLinkButton>
+<li>
+    <SwLinkButton Href="@Link.Url" data-active="@isActive">@Link.Name</SwLinkButton>
 </li>
 
 @code {

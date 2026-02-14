@@ -10,7 +10,3 @@ li {
 li > ::deep a {
     justify-content: flex-start;
 }
-
-li.active > ::deep a {
-    background-color: var(--color-bg-hover);
-}
