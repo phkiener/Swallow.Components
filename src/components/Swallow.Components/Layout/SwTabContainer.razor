@@ -21,15 +21,15 @@
         {
             if (tab.Identifier == ActiveTab)
             {
-                <div data-identifier="@tab.Identifier">
+                <article data-identifier="@tab.Identifier">
                     @tab.Content
-                </div>
+                </article>
             }
             else
             {
-                <div data-identifier="@tab.Identifier" aria-hidden="true" hidden>
+                <article data-identifier="@tab.Identifier" aria-hidden="true" hidden>
                     @tab.Content
-                </div>
+                </article>
             }
         }
     </div>
