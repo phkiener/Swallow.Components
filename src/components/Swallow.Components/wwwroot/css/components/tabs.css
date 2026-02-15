@@ -22,6 +22,8 @@
         flex-direction: column;
         align-items: stretch;
         justify-content: flex-end;
+
+        cursor: pointer;
     }
 
     label > span {
@@ -29,11 +31,11 @@
         color: light-dark(var(--color-gray-dark), var(--color-gray-light));
     }
 
-    label:has(input[type="radio"]:checked) > span {
+    label:has(> :checked) > span {
         color: light-dark(var(--color-black), var(--color-white));
     }
 
-    label:has(input[type="radio"]:checked)::after {
+    label:has(> :checked)::after {
         content: "";
         position: absolute;
         bottom: -1px;

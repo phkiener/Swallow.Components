@@ -2,18 +2,17 @@
 
 <div class="sw tab-container" role="tablist">
     <header>
-        @foreach (var tab in registeredTabs)
-        {
-            <label role="tab">
-                <span>@tab.Title</span>
-                <input type="radio"
-                       name="@fieldIdentifier.FieldName"
-                       value="@tab.Identifier"
-                       checked="@(tab.Identifier == ActiveTab)"
-                       data-register="@(!RendererInfo.IsInteractive)"
-                       @onchange="@(SwitchTabAsync)">
-            </label>
-        }
+        <InputRadioGroup Value="@ActiveTab"
+                         ValueChanged="@((string? id) => SwitchTabAsync(id))"
+                         ValueExpression="@ActiveTabExpression">
+            @foreach (var tab in registeredTabs)
+            {
+                <label role="tab">
+                    <span>@tab.Title</span>
+                    <InputRadio Value="@tab.Identifier" data-register="@(!RendererInfo.IsInteractive)" />
+                </label>
+            }
+        </InputRadioGroup>
     </header>
 
     <div role="tabpanel">

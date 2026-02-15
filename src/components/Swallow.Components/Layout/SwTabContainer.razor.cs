@@ -1,6 +1,5 @@
 using System.Linq.Expressions;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Forms;
 
 namespace Swallow.Components.Layout;
 
@@ -11,7 +10,6 @@ namespace Swallow.Components.Layout;
 public sealed partial class SwTabContainer : ComponentBase
 {
     private readonly List<SwTab> registeredTabs = [];
-    private FieldIdentifier fieldIdentifier;
 
     /// <summary>
     /// The child content to display; should consist solely of <see cref="SwTab"/>s.
@@ -31,11 +29,6 @@ public sealed partial class SwTabContainer : ComponentBase
     [EditorRequired]
     public required Expression<Func<string?>> ActiveTabExpression { get; set; }
 
-    protected override void OnParametersSet()
-    {
-        fieldIdentifier = FieldIdentifier.Create(ActiveTabExpression);
-    }
-
     internal void Register(SwTab swTab)
     {
         if (!registeredTabs.Contains(swTab))
@@ -51,13 +44,8 @@ public sealed partial class SwTabContainer : ComponentBase
         StateHasChanged();
     }
 
-    private async Task SwitchTabAsync(ChangeEventArgs args)
+    private async Task SwitchTabAsync(string? identifier)
     {
-        if (args.Value is not string identifier)
-        {
-            return;
-        }
-
         ActiveTab = identifier;
         await ActiveTabChanged.InvokeAsync(ActiveTab);
 
