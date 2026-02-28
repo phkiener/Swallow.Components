@@ -31,7 +31,6 @@
 
         if (response.stream) {
             for await (const chunk of response.stream) {
-                console.log("Applying chunk...");
                 applyResponse(targetElement, chunk);
             }
         }
@@ -61,28 +60,11 @@
                 case 200:
                     const streamingBoundary = response.headers.get("srx-streaming-marker");
                     if (streamingBoundary) {
-                        const iterator = (async function*(reader) {
-                            const decoder = new TextDecoder();
-
-                            let done, value;
-                            while (!done) {
-                                ({ value, done } = await reader.read());
-                                if (!done) {
-                                    for (const chunk of decoder.decode(value).split(streamingBoundary)) {
-                                        if (chunk.length !== 0 && chunk !== "\n")
-                                        {
-                                            yield chunk;
-                                        }
-                                    }
-                                }
-                            }
-                        })(response.body.getReader());
-
+                        const iterator = iterateChunks(response.body.getReader(), streamingBoundary);
                         return { content: undefined, stream: iterator, redirect: undefined, error: undefined };
                     }
 
                     const content = await response.text();
-
                     return { content: content, stream: undefined, redirect: undefined, error: undefined };
 
                 case 204:
@@ -100,6 +82,24 @@
         } catch (error) {
             console.error("srx request failed: " + error);
             return { content: undefined, stream: undefined, redirect: undefined, error: undefined };
+        }
+    }
+
+    async function* iterateChunks(reader, boundary) {
+        const decoder = new TextDecoder();
+
+        while (true) {
+            const chunk = await reader.read();
+            if (chunk.done) {
+                return;
+            }
+
+            for (const part of decoder.decode(chunk.value).split(boundary)) {
+                if (part.length !== 0 && part !== "\n")
+                {
+                    yield part;
+                }
+            }
         }
     }
 

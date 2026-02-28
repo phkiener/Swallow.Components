@@ -7,10 +7,12 @@
     }
 </ul>
 
-<button type="button" @onclick="GetOneMore">Get 1 more</button>
-<button type="button" @onclick="GetTenMore">Get 10 more</button>
+<button type="button" @onclick="GetOneMore" disabled="@generating">Get 1 more</button>
+<button type="button" @onclick="GetTenMore" disabled="@generating">Get 10 more</button>
 
 @code {
+
+    private bool generating = false;
 
     [PersistentState]
     public List<int>? RandomNumbers { get; set; }
@@ -22,18 +24,33 @@
 
     private async Task GetOneMore()
     {
+        generating = true;
+        StateHasChanged();
+
         var number = await GenerateNumberAsync();
         RandomNumbers?.Add(number);
 
+        StateHasChanged();
+
+        generating = false;
         StateHasChanged();
     }
 
     private async Task GetTenMore()
     {
+        generating = true;
+        StateHasChanged();
+
         for (var i = 0; i < 10; i++)
         {
-            await GetOneMore();
+            var number = await GenerateNumberAsync();
+            RandomNumbers?.Add(number);
+
+            StateHasChanged();
         }
+
+        generating = false;
+        StateHasChanged();
     }
 
     private async Task<int> GenerateNumberAsync()

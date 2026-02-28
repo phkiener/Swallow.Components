@@ -5,8 +5,7 @@
 - Imitate `hx-sync` (queue-all especially)
 - Add loading indicator/interaction stopper?
 - Support debouncing
-- Support streaming rendering (i.e. sending out multiple DOMs)
-  - Try sending out DOM-diffs; RenderBatch full of RenderFrames?
+- Try sending out DOM-diffs; RenderBatch full of RenderFrames?
 - `hx-preserve` needed?
 - Can we do URLs based on `{type}/{trigger}/{event}`?
   - This makes more sense with identifiers, tho
