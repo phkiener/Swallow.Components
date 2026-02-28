@@ -1,0 +1,45 @@
+@page "/reactive/streaming"
+
+<ul>
+    @foreach (var number in RandomNumbers ?? [])
+    {
+        <li>@number</li>
+    }
+</ul>
+
+<button type="button" @onclick="GetOneMore">Get 1 more</button>
+<button type="button" @onclick="GetTenMore">Get 10 more</button>
+
+@code {
+
+    [PersistentState]
+    public List<int>? RandomNumbers { get; set; }
+
+    protected override void OnInitialized()
+    {
+        RandomNumbers ??= [];
+    }
+
+    private async Task GetOneMore()
+    {
+        var number = await GenerateNumberAsync();
+        RandomNumbers?.Add(number);
+
+        StateHasChanged();
+    }
+
+    private async Task GetTenMore()
+    {
+        for (var i = 0; i < 10; i++)
+        {
+            await GetOneMore();
+        }
+    }
+
+    private async Task<int> GenerateNumberAsync()
+    {
+        await Task.Delay(TimeSpan.FromMilliseconds(500));
+        return Random.Shared.Next();
+    }
+
+}

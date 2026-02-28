@@ -38,6 +38,14 @@ internal sealed class ReactiveComponentInvoker(
             bytePool: ArrayPool<byte>.Shared,
             charPool: ArrayPool<char>.Shared);
 
+        var useStreaming = context.GetEndpoint()?.Metadata.GetMetadata<ReactiveComponentAttribute>()?.DisableStreaming is false;
+        if (useStreaming)
+        {
+            var boundary = $"<!-- SRX-STREAMING-BOUNDARY {Guid.NewGuid():N} -->";
+            context.Response.Headers["srx-streaming-marker"] = boundary;
+            renderer.StreamUpdatesTo(responseWriter, boundary);
+        }
+
         await renderer.Dispatcher.InvokeAsync(async () =>
         {
             try
@@ -106,7 +114,11 @@ internal sealed class ReactiveComponentInvoker(
         });
 
         await renderer.ProcessPendingTasksAsync();
-        await renderer.Dispatcher.InvokeAsync(() => renderer.WriteHtmlTo(responseWriter));
+
+        if (!useStreaming)
+        {
+            await renderer.Dispatcher.InvokeAsync(() => renderer.WriteHtmlTo(responseWriter));
+        }
     }
 
     private static DispatchedEvent? ReadEvent(IFormCollection form)

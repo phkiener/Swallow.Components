@@ -127,7 +127,7 @@ public sealed class ReactiveComponentsEndpointDataSource : EndpointDataSource
         endpointBuilder.RequestDelegate = result.RequestDelegate;
         endpointBuilder.DisplayName = $"{endpointBuilder.RoutePattern.RawText} ({targetType.Name})";
 
-        endpointBuilder.CopyAttributeMetadata(targetType, static a => a is not ReactiveComponentAttribute and not RouteAttribute);
+        endpointBuilder.CopyAttributeMetadata(targetType, static a => a is not RouteAttribute);
         endpointBuilder.ApplyResourceCollectionMetadata(endpointRouteBuilder, endpointOptions.StaticAssetManifestPath);
 
         endpointBuilder.Metadata.Add(new SuppressLinkGenerationMetadata());

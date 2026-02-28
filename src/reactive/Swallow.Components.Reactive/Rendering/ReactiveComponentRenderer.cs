@@ -1,9 +1,11 @@
+using System.Diagnostics;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Http;
@@ -18,17 +20,19 @@ namespace Swallow.Components.Reactive.Framework;
 
 internal class ReactiveComponentRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory) : StaticHtmlRenderer(serviceProvider, loggerFactory)
 {
+    private static readonly Task CanceledRenderTask = Task.FromCanceled(new CancellationToken(true));
     private static readonly JsonSerializerOptions EventSerializationOptions = new()
     {
         MaxDepth = 32,
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         PropertyNameCaseInsensitive = true
     };
-
     private readonly IServiceProvider serviceProvider = serviceProvider;
     private readonly MemoizingDispatcher dispatcher = new(Dispatcher.CreateDefault());
 
     private ResourceAssetCollection? resourceCollection;
+    private TextWriter? streamingWriter;
+    private string? streamBoundary;
     private int? rootComponentId;
     private int? fragmentComponentId;
 
@@ -147,6 +151,26 @@ internal class ReactiveComponentRenderer(IServiceProvider serviceProvider, ILogg
 
         ProcessPendingRender();
         WriteComponentHtml(rootComponentId.Value, output);
+    }
+
+    public void StreamUpdatesTo(TextWriter output, string boundary)
+    {
+        streamingWriter = output;
+        streamBoundary = boundary;
+    }
+
+    [DebuggerDisableUserUnhandledExceptions]
+    protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
+    {
+        if (streamingWriter is not null && rootComponentId.HasValue)
+        {
+            WriteComponentHtml(rootComponentId.Value, streamingWriter);
+            streamingWriter.WriteLine(streamBoundary);
+
+            return streamingWriter.FlushAsync().ContinueWith(static _ => CanceledRenderTask);
+        }
+
+        return CanceledRenderTask;
     }
 
     private sealed class MemoizingDispatcher(Dispatcher actualDispatcher) : Dispatcher
