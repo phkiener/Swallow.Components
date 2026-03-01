@@ -1,177 +1,199 @@
-'use strict';
+const fragmentSelector = "[srx-fragment]";
+const stateMarker = " srx-prerender-state ";
 
-(async scriptTag => {
-    document.addEventListener('DOMContentLoaded', async () => {
-        const fragment = scriptTag.previousElementSibling;
+export function setupFragment(element, prerenderedState) {
+    for (const key in prerenderedState) {
+        const stateElement = document.createElement("meta");
+        stateElement.setAttribute("itemprop", "state");
+        stateElement.setAttribute("data-key", key);
+        stateElement.setAttribute("data-value", prerenderedState[key]);
 
-        await triggerInteraction(scriptTag.previousElementSibling, null);
-        scriptTag.remove();
+        element.appendChild(stateElement);
+    }
 
-        const allFragments = document.querySelectorAll("[srx-fragment]");
-        if (fragment === allFragments[allFragments.length - 1]) {
-            const trailingComments = [...document.childNodes].filter(n => n.nodeType === Node.COMMENT_NODE);
-            for (const trailingComment of trailingComments) {
-                if (trailingComment.textContent.startsWith(" srx-prerender-state ")) {
-                    trailingComment.remove();
-                }
-            }
+    const fragment = new ReactiveFragment(element);
+    element["fragment"] = fragment;
+    fragment.triggerInteraction(undefined, true);
+}
+
+function consumePrerenderedState() {
+    const trailingComments = [...document.childNodes].filter(n => n.nodeType === Node.COMMENT_NODE);
+
+    for (const trailingComment of trailingComments) {
+        if (trailingComment.textContent.startsWith(stateMarker)) {
+            const prerenderedStateText = trailingComment.textContent.substring(stateMarker.length);
+            trailingComment.remove();
+
+            return JSON.parse(prerenderedStateText);
         }
-    });
+    }
+}
 
-    async function triggerInteraction(targetElement, triggeringEvent) {
-        const response = await fetchResponse(targetElement, triggeringEvent);
+function handleInteraction(event) {
+    const fragment = event.target.closest(fragmentSelector)["fragment"];
+    const trigger = event.target.getAttribute("_srx-path");
 
-        if (response.redirect) {
-            window.location = decodeURI(response.redirect);
+    if (fragment && trigger) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const interaction = new Interaction(trigger, event);
+        fragment.triggerInteraction(interaction);
+
+        return true;
+    }
+}
+
+class Interaction {
+
+    trigger;
+    eventName;
+    eventBody;
+
+    constructor(trigger, event) {
+        this.trigger = trigger;
+        this.eventName = "on" + event.type
+
+        const transformer = getEventObject(event.type);
+        this.eventBody = transformer(event);
+    }
+}
+
+class ReactiveFragment {
+    #triggerTimeout;
+
+    #element;
+    #interactions;
+
+    constructor(element) {
+        this.#element = element;
+        this.#interactions = [];
+    }
+
+    triggerInteraction(interaction, immediate) {
+        if (interaction) {
+            this.#interactions.push(interaction);
         }
 
-        if (response.content) {
-            applyResponse(targetElement, response.content);
-        }
-
-        if (response.stream) {
-            for await (const chunk of response.stream) {
-                applyResponse(targetElement, chunk);
-            }
-        }
-
-        if (response.error) {
-            targetElement.setAttribute("srx-error", "");
-
-            const errorContainer = targetElement.querySelector("& > .srx-error");
-            if (errorContainer) {
-                errorContainer.innerText = response.error;
-            }
+        if (immediate) {
+            this.#sendInteraction(true).catch(_ => {});
+        } else {
+            clearTimeout(this.#triggerTimeout);
+            this.#triggerTimeout = setTimeout(() => this.#sendInteraction(), 100);
         }
     }
 
-    async function fetchResponse(targetElement, triggeringEvent) {
-        const formData = buildForm(targetElement, triggeringEvent);
-        const route = targetElement.getAttribute("srx-route");
+    async #sendInteraction(force) {
+        clearTimeout(this.#triggerTimeout);
+        this.#triggerTimeout = undefined;
+
+        if (this.#interactions.length === 0 && !force) {
+            return;
+        }
+
+        const route = this.#element.getAttribute("srx-route");
+        const formData = ReactiveFragment.#constructForm(this.#element, this.#interactions);
+        this.#interactions = [];
 
         try {
             const response = await fetch(route, { method: "POST", body: formData });
-            if (response.headers.get("srx-response") !== "true") {
-                console.error("srx request was not handled by correct endpoint");
-                return { content: undefined, redirect: undefined };
-            }
-
-            switch (response.status) {
-                case 200:
-                    const streamingBoundary = response.headers.get("srx-streaming-marker");
-                    if (streamingBoundary) {
-                        const iterator = iterateChunks(response.body.getReader(), streamingBoundary);
-                        return { content: undefined, stream: iterator, redirect: undefined, error: undefined };
-                    }
-
-                    const content = await response.text();
-                    return { content: content, stream: undefined, redirect: undefined, error: undefined };
-
-                case 204:
-                    const location = response.headers.get("srx-redirect");
-                    return { content: undefined, stream: undefined, redirect: location, error: undefined };
-
-                case 500:
-                    const errorMessage = await response.text();
-                    return { content: undefined, stream: undefined, redirect: undefined, error: errorMessage };
-
-                default:
-                    console.error("srx request returned unhandled status code: " + response.status);
-                    return { content: undefined, stream: undefined, redirect: undefined };
-            }
+            await this.#handleResponse(response);
         } catch (error) {
             console.error("srx request failed: " + error);
-            return { content: undefined, stream: undefined, redirect: undefined, error: undefined };
         }
     }
 
-    async function* iterateChunks(reader, boundary) {
-        const decoder = new TextDecoder();
+    async #handleResponse(response) {
+        if (response.headers.get("srx-response") !== "true") {
+            throw new Error("srx request not handled by correct endpoint.");
+        }
 
-        while (true) {
-            const chunk = await reader.read();
-            if (chunk.done) {
-                return;
-            }
-
-            for (const part of decoder.decode(chunk.value).split(boundary)) {
-                if (part.length !== 0 && part !== "\n")
-                {
-                    yield part;
+        switch (response.status) {
+            case 200:
+                const streamingBoundary = response.headers.get("srx-streaming-marker");
+                if (streamingBoundary) {
+                    const iterator = iterateChunks(response.body.getReader(), streamingBoundary);
+                    for await (const chunk of iterator) {
+                        ReactiveFragment.#applyBody(this.#element, chunk);
+                    }
+                } else {
+                    const content = await response.text();
+                    ReactiveFragment.#applyBody(this.#element, content);
                 }
-            }
+
+                break;
+
+            case 204:
+                const location = response.headers.get("srx-redirect");
+                window.location = decodeURI(location);
+                break;
+
+            case 500:
+                const errorMessage = await response.text();
+                throw new Error(errorMessage);
+
+            default:
+                throw new Error("Unexpected status code: " + response.status);
         }
     }
 
-    function buildForm(targetElement, triggeringEvent) {
+    static #constructForm(element, interactions) {
         const formData = new FormData();
 
-        if (triggeringEvent) {
-            formData.append("_srx-event", "on" + triggeringEvent.event.type);
-            formData.append("_srx-path", triggeringEvent.element);
-
-            const transformer = getEventObject(triggeringEvent.event.type);
-            if (transformer) {
-                formData.append("_srx-event-body", JSON.stringify(transformer(triggeringEvent.event)));
-            }
-        }
-
-        const antiforgeryElement = targetElement.querySelector("& > meta[itemprop='antiforgery']");
+        const antiforgeryElement = element.querySelector("& > meta[itemprop='antiforgery']");
         if (antiforgeryElement) {
             formData.append(antiforgeryElement.getAttribute("data-name"), antiforgeryElement.getAttribute("data-token"));
         }
 
-        for (const parameterElement of [...targetElement.querySelectorAll("& > meta[itemprop='parameter']")]) {
+        for (const parameterElement of [...element.querySelectorAll("& > meta[itemprop='parameter']")]) {
             formData.append("_srx-parameter-" + parameterElement.getAttribute("data-key"), parameterElement.getAttribute("data-value"));
         }
 
-        const stateElements = [...targetElement.querySelectorAll("& > meta[itemprop='state']")];
-        if (stateElements.length > 0) {
-            for (const stateElement of [...targetElement.querySelectorAll("& > meta[itemprop='state']")]) {
-                formData.append("_srx-state-" + stateElement.getAttribute("data-key"), stateElement.getAttribute("data-value"));
-            }
+        for (const stateElement of [...element.querySelectorAll("& > meta[itemprop='state']")]) {
+            formData.append("_srx-state-" + stateElement.getAttribute("data-key"), stateElement.getAttribute("data-value"));
         }
-        else {
-            const trailingComments = [...document.childNodes].filter(n => n.nodeType === Node.COMMENT_NODE);
-            for (const trailingComment of trailingComments) {
-                if (trailingComment.textContent.startsWith(" srx-prerender-state ")) {
-                    const prerenderedStateText = trailingComment.textContent.substring(21);
-                    const parsedState = JSON.parse(prerenderedStateText);
 
-                    for (const key in parsedState) {
-                        formData.append("_srx-state-" + key, parsedState[key]);
-                    }
-                }
-            }
+        for (const interaction of interactions) {
+            formData.append("_srx-event", JSON.stringify(interaction));
         }
 
         return formData;
     }
 
-    function applyResponse(targetElement, content) {
+    static #applyBody(element, content) {
         const parser = new DOMParser();
         const document = parser.parseFromString(content, "text/html");
 
         const headContent = document.body.querySelector(".srx-head-content");
         const mainContent = document.body.querySelector(".srx-content");
 
-        updateHeadContent(window.document.head, headContent, targetElement.id);
-        placeContentIntoFragment(targetElement, mainContent);
+        this.#updateHeadContent(window.document.head, headContent, element);
+        this.#placeContentIntoFragment(element, mainContent);
 
         [...document.head.querySelectorAll("meta[itemprop='event-handler']")]
-            .forEach(meta => registerEventHandler(targetElement, meta.getAttribute("data-element"), meta.getAttribute("data-event")));
+            .forEach(meta => this.#registerEventHandler(element, meta.getAttribute("data-element"), meta.getAttribute("data-event")));
+
 
         [...document.head.querySelectorAll("meta[itemprop='parameter']")]
-            .forEach(meta => targetElement.appendChild(meta));
+            .forEach(meta => element.appendChild(meta));
 
         [...document.head.querySelectorAll("meta[itemprop='state']")]
-            .forEach(meta => targetElement.appendChild(meta));
+            .forEach(meta => element.appendChild(meta));
 
         [...document.head.querySelectorAll("meta[itemprop='antiforgery']")]
-            .forEach(meta => targetElement.appendChild(meta));
+            .forEach(meta => element.appendChild(meta));
     }
 
-    function placeContentIntoFragment(target, content) {
+    static #updateHeadContent(target, content, marker) {
+        target.querySelectorAll(`[srx-fragment='${marker}']`).forEach(i => i.remove());
+
+        for (const element of [...content.children]) {
+            element.setAttribute("srx-fragment", marker);
+            target.insertAdjacentElement("afterbegin", element);
+        }
+    }
+
+    static #placeContentIntoFragment(target, content) {
         target.innerHTML = content.innerHTML;
 
         for (const script of [...target.querySelectorAll("script")]) {
@@ -188,28 +210,19 @@
         }
     }
 
-    function updateHeadContent(target, content, marker) {
-        target.querySelectorAll(`[srx-fragment='${marker}']`).forEach(i => i.remove());
-
-        for (const element of [...content.children]) {
-            element.setAttribute("srx-fragment", marker);
-            target.insertAdjacentElement("afterbegin", element);
-        }
-    }
-
-    function registerEventHandler(targetElement, element, event) {
+    static #registerEventHandler(targetElement, element, event) {
         try {
-            const resolvedElement = resolveElement(targetElement, element);
+            const resolvedElement = ReactiveFragment.#resolveElement(targetElement, element);
             resolvedElement.setAttribute("_srx-path", element);
 
             const eventName = event.replace(/^on/, "");
-            resolvedElement.addEventListener(eventName, onReactiveElementTriggered);
+            resolvedElement.addEventListener(eventName, handleInteraction);
         } catch {
             console.error("Can't resolve '" + element + "' in " + targetElement);
         }
     }
 
-    function resolveElement(targetElement, path) {
+    static #resolveElement(targetElement, path) {
         let element = targetElement;
 
         for (const segment of path.split("/")) {
@@ -235,226 +248,247 @@
 
         return element;
     }
+}
 
-    function onReactiveElementTriggered(evnt) {
-        const container = evnt.currentTarget.closest("[srx-fragment]");
-        const dispatchInfo = { element: evnt.currentTarget.getAttribute("_srx-path"), event: evnt };
+async function* iterateChunks(reader, boundary) {
+    const decoder = new TextDecoder();
 
-        evnt.preventDefault();
-        evnt.stopPropagation();
-
-        triggerInteraction(container, dispatchInfo);
-    }
-
-    // The following is taken from https://raw.githubusercontent.com/dotnet/aspnetcore/2edb8c84fa5e64ff7877f11e0f181f0419c039c9/src/Components/Web.JS/src/Rendering/Events/EventTypes.ts
-    // Copyright found in original file:
-    // Licensed to the .NET Foundation under one or more agreements.
-    // The .NET Foundation licenses this file to you under the MIT license.
-
-    const eventTypeRegistry = new Map();
-
-    function getEventObject(eventName) {
-        return eventTypeRegistry.get(eventName);
-    }
-    function configureEvent(eventNames, transformer) {
-        eventNames.forEach(eventName => eventTypeRegistry.set(eventName, transformer));
-    }
-
-    configureEvent(['input', 'change'], parseChangeEvent);
-    function parseChangeEvent(event) {
-        const element = event.target;
-
-        if (isTimeBasedInput(element)) {
-            const normalizedValue = normalizeTimeBasedValue(element);
-
-            return { value: normalizedValue };
-        } else if (isMultipleSelectInput(element)) {
-            const selectedValues = Array.from(element.options)
-                .filter(option => option.selected)
-                .map(option => option.value);
-
-            return { value: selectedValues };
-        } else {
-            const targetIsCheckbox = isCheckbox(element);
-            const newValue = targetIsCheckbox ? !!element['checked'] : element['value'];
-
-            return { value: newValue };
+    while (true) {
+        const chunk = await reader.read();
+        if (chunk.done) {
+            return;
         }
 
-        function isCheckbox(element) {
-            return !!element && element.tagName === 'INPUT' && element.getAttribute('type') === 'checkbox';
-        }
-
-        function isTimeBasedInput(element) {
-            const timeBasedInputs = ['date', 'datetime-local', 'month', 'time', 'week'];
-            return timeBasedInputs.indexOf(element.getAttribute('type')) !== -1;
-        }
-
-        function isMultipleSelectInput(element) {
-            return element instanceof HTMLSelectElement && element.type === 'select-multiple';
-        }
-
-        function normalizeTimeBasedValue(element) {
-            const value = element.value;
-            const type = element.type;
-            switch (type) {
-                case 'date':
-                case 'month':
-                    return value;
-                case 'datetime-local':
-                    return value.length === 16 ? value + ':00' : value; // Convert yyyy-MM-ddTHH:mm to yyyy-MM-ddTHH:mm:00
-                case 'time':
-                    return value.length === 5 ? value + ':00' : value; // Convert hh:mm to hh:mm:00
-                case 'week':
-                    // For now we are not going to normalize input type week as it is not trivial
-                    return value;
+        for (const part of decoder.decode(chunk.value).split(boundary)) {
+            if (part.length !== 0 && part !== "\n")
+            {
+                yield part;
             }
-
-            throw new Error(`Invalid element type '${type}'.`);
         }
     }
+}
 
-    configureEvent(['copy', 'cut','paste'], parseClipboardEvent);
-    function parseClipboardEvent(event) {
-        return { type: event.type };
+// --------- //
+// - setup - //
+// --------- //
+
+const fragments = document.querySelectorAll(fragmentSelector);
+const prerenderedState = consumePrerenderedState();
+
+for (const fragment of fragments) {
+    setupFragment(fragment, prerenderedState);
+}
+
+// --------- //
+
+// The following is taken from https://raw.githubusercontent.com/dotnet/aspnetcore/2edb8c84fa5e64ff7877f11e0f181f0419c039c9/src/Components/Web.JS/src/Rendering/Events/EventTypes.ts
+// Copyright found in original file:
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+const eventTypeRegistry = new Map();
+
+function getEventObject(eventName) {
+    return eventTypeRegistry.get(eventName);
+}
+function configureEvent(eventNames, transformer) {
+    eventNames.forEach(eventName => eventTypeRegistry.set(eventName, transformer));
+}
+
+configureEvent(['input', 'change'], parseChangeEvent);
+function parseChangeEvent(event) {
+    const element = event.target;
+
+    if (isTimeBasedInput(element)) {
+        const normalizedValue = normalizeTimeBasedValue(element);
+
+        return { value: normalizedValue };
+    } else if (isMultipleSelectInput(element)) {
+        const selectedValues = Array.from(element.options)
+            .filter(option => option.selected)
+            .map(option => option.value);
+
+        return { value: selectedValues };
+    } else {
+        const targetIsCheckbox = isCheckbox(element);
+        const newValue = targetIsCheckbox ? !!element['checked'] : element['value'];
+
+        return { value: newValue };
     }
 
-    configureEvent(['drag', 'dragend', 'dragenter', 'dragleave', 'dragover', 'dragstart', 'drop'], parseDragEvent);
-    function parseDragEvent(event) {
-        return {
-            ...parseMouseEvent(event),
-            dataTransfer: event.dataTransfer ? {
-                dropEffect: event.dataTransfer.dropEffect,
-                effectAllowed: event.dataTransfer.effectAllowed,
-                files: Array.from(event.dataTransfer.files).map(f => f.name),
-                items: Array.from(event.dataTransfer.items).map(i => ({ kind: i.kind, type: i.type })),
-                types: event.dataTransfer.types
-            } : null
-        };
+    function isCheckbox(element) {
+        return !!element && element.tagName === 'INPUT' && element.getAttribute('type') === 'checkbox';
     }
 
-    configureEvent(['focus', 'blur', 'focusin', 'focusout'], parseFocusEvent);
-    function parseFocusEvent(event) {
-        return { type: event.type };
+    function isTimeBasedInput(element) {
+        const timeBasedInputs = ['date', 'datetime-local', 'month', 'time', 'week'];
+        return timeBasedInputs.indexOf(element.getAttribute('type')) !== -1;
     }
 
-    configureEvent(['keydown', 'keyup', 'keypress'], parseKeyboardEvent);
-    function parseKeyboardEvent(event) {
-        return {
-            key: event.key,
-            code: event.code,
-            location: event.location,
-            repeat: event.repeat,
-            ctrlKey: event.ctrlKey,
-            shiftKey: event.shiftKey,
-            altKey: event.altKey,
-            metaKey: event.metaKey,
-            type: event.type,
-            isComposing: event.isComposing,
-        };
+    function isMultipleSelectInput(element) {
+        return element instanceof HTMLSelectElement && element.type === 'select-multiple';
     }
 
-    configureEvent(['contextmenu', 'click', 'mouseover', 'mouseout', 'mousemove', 'mousedown', 'mouseup', 'mouseleave', 'mouseenter', 'dblclick'], parseMouseEvent);
-    function parseMouseEvent(event) {
-        return {
-            detail: event.detail,
-            screenX: event.screenX,
-            screenY: event.screenY,
-            clientX: event.clientX,
-            clientY: event.clientY,
-            offsetX: event.offsetX,
-            offsetY: event.offsetY,
-            pageX: event.pageX,
-            pageY: event.pageY,
-            movementX: event.movementX,
-            movementY: event.movementY,
-            button: event.button,
-            buttons: event.buttons,
-            ctrlKey: event.ctrlKey,
-            shiftKey: event.shiftKey,
-            altKey: event.altKey,
-            metaKey: event.metaKey,
-            type: event.type,
-        };
-    }
-
-    configureEvent(['error'], parseErrorEvent);
-    function parseErrorEvent(event) {
-        return {
-            message: event.message,
-            filename: event.filename,
-            lineno: event.lineno,
-            colno: event.colno,
-            type: event.type,
-        };
-    }
-
-    configureEvent(['loadstart', 'timeout', 'abort', 'load', 'loadend', 'progress'], parseProgressEvent);
-    function parseProgressEvent(event) {
-        return {
-            lengthComputable: event.lengthComputable,
-            loaded: event.loaded,
-            total: event.total,
-            type: event.type,
-        };
-    }
-
-    configureEvent(['touchcancel', 'touchend', 'touchmove', 'touchenter', 'touchleave', 'touchstart'], parseTouchEvent);
-    function parseTouchEvent(event) {
-        return {
-            detail: event.detail,
-            touches: parseTouch(event.touches),
-            targetTouches: parseTouch(event.targetTouches),
-            changedTouches: parseTouch(event.changedTouches),
-            ctrlKey: event.ctrlKey,
-            shiftKey: event.shiftKey,
-            altKey: event.altKey,
-            metaKey: event.metaKey,
-            type: event.type,
-        };
-
-        function parseTouch(touchList) {
-            const touches = [];
-
-            for (let i = 0; i < touchList.length; i++) {
-                const touch = touchList[i];
-                touches.push({
-                    identifier: touch.identifier,
-                    clientX: touch.clientX,
-                    clientY: touch.clientY,
-                    screenX: touch.screenX,
-                    screenY: touch.screenY,
-                    pageX: touch.pageX,
-                    pageY: touch.pageY,
-                });
-            }
-            return touches;
+    function normalizeTimeBasedValue(element) {
+        const value = element.value;
+        const type = element.type;
+        switch (type) {
+            case 'date':
+            case 'month':
+                return value;
+            case 'datetime-local':
+                return value.length === 16 ? value + ':00' : value; // Convert yyyy-MM-ddTHH:mm to yyyy-MM-ddTHH:mm:00
+            case 'time':
+                return value.length === 5 ? value + ':00' : value; // Convert hh:mm to hh:mm:00
+            case 'week':
+                // For now we are not going to normalize input type week as it is not trivial
+                return value;
         }
-    }
 
-    configureEvent(['gotpointercapture', 'lostpointercapture', 'pointercancel', 'pointerdown', 'pointerenter', 'pointerleave', 'pointermove', 'pointerout', 'pointerover', 'pointerup'], parsePointerEvent);
-    function parsePointerEvent(event) {
-        return {
-            ...parseMouseEvent(event),
-            pointerId: event.pointerId,
-            width: event.width,
-            height: event.height,
-            pressure: event.pressure,
-            tiltX: event.tiltX,
-            tiltY: event.tiltY,
-            pointerType: event.pointerType,
-            isPrimary: event.isPrimary,
-        };
+        throw new Error(`Invalid element type '${type}'.`);
     }
+}
 
-    configureEvent(['wheel', 'mousewheel'], parseWheelEvent);
-    function parseWheelEvent(event) {
-        return {
-            ...parseMouseEvent(event),
-            deltaX: event.deltaX,
-            deltaY: event.deltaY,
-            deltaZ: event.deltaZ,
-            deltaMode: event.deltaMode,
-        };
+configureEvent(['copy', 'cut','paste'], parseClipboardEvent);
+function parseClipboardEvent(event) {
+    return { type: event.type };
+}
+
+configureEvent(['drag', 'dragend', 'dragenter', 'dragleave', 'dragover', 'dragstart', 'drop'], parseDragEvent);
+function parseDragEvent(event) {
+    return {
+        ...parseMouseEvent(event),
+        dataTransfer: event.dataTransfer ? {
+            dropEffect: event.dataTransfer.dropEffect,
+            effectAllowed: event.dataTransfer.effectAllowed,
+            files: Array.from(event.dataTransfer.files).map(f => f.name),
+            items: Array.from(event.dataTransfer.items).map(i => ({ kind: i.kind, type: i.type })),
+            types: event.dataTransfer.types
+        } : null
+    };
+}
+
+configureEvent(['focus', 'blur', 'focusin', 'focusout'], parseFocusEvent);
+function parseFocusEvent(event) {
+    return { type: event.type };
+}
+
+configureEvent(['keydown', 'keyup', 'keypress'], parseKeyboardEvent);
+function parseKeyboardEvent(event) {
+    return {
+        key: event.key,
+        code: event.code,
+        location: event.location,
+        repeat: event.repeat,
+        ctrlKey: event.ctrlKey,
+        shiftKey: event.shiftKey,
+        altKey: event.altKey,
+        metaKey: event.metaKey,
+        type: event.type,
+        isComposing: event.isComposing,
+    };
+}
+
+configureEvent(['contextmenu', 'click', 'mouseover', 'mouseout', 'mousemove', 'mousedown', 'mouseup', 'mouseleave', 'mouseenter', 'dblclick'], parseMouseEvent);
+function parseMouseEvent(event) {
+    return {
+        detail: event.detail,
+        screenX: event.screenX,
+        screenY: event.screenY,
+        clientX: event.clientX,
+        clientY: event.clientY,
+        offsetX: event.offsetX,
+        offsetY: event.offsetY,
+        pageX: event.pageX,
+        pageY: event.pageY,
+        movementX: event.movementX,
+        movementY: event.movementY,
+        button: event.button,
+        buttons: event.buttons,
+        ctrlKey: event.ctrlKey,
+        shiftKey: event.shiftKey,
+        altKey: event.altKey,
+        metaKey: event.metaKey,
+        type: event.type,
+    };
+}
+
+configureEvent(['error'], parseErrorEvent);
+function parseErrorEvent(event) {
+    return {
+        message: event.message,
+        filename: event.filename,
+        lineno: event.lineno,
+        colno: event.colno,
+        type: event.type,
+    };
+}
+
+configureEvent(['loadstart', 'timeout', 'abort', 'load', 'loadend', 'progress'], parseProgressEvent);
+function parseProgressEvent(event) {
+    return {
+        lengthComputable: event.lengthComputable,
+        loaded: event.loaded,
+        total: event.total,
+        type: event.type,
+    };
+}
+
+configureEvent(['touchcancel', 'touchend', 'touchmove', 'touchenter', 'touchleave', 'touchstart'], parseTouchEvent);
+function parseTouchEvent(event) {
+    return {
+        detail: event.detail,
+        touches: parseTouch(event.touches),
+        targetTouches: parseTouch(event.targetTouches),
+        changedTouches: parseTouch(event.changedTouches),
+        ctrlKey: event.ctrlKey,
+        shiftKey: event.shiftKey,
+        altKey: event.altKey,
+        metaKey: event.metaKey,
+        type: event.type,
+    };
+
+    function parseTouch(touchList) {
+        const touches = [];
+
+        for (let i = 0; i < touchList.length; i++) {
+            const touch = touchList[i];
+            touches.push({
+                identifier: touch.identifier,
+                clientX: touch.clientX,
+                clientY: touch.clientY,
+                screenX: touch.screenX,
+                screenY: touch.screenY,
+                pageX: touch.pageX,
+                pageY: touch.pageY,
+            });
+        }
+        return touches;
     }
-})(document.currentScript);
+}
+
+configureEvent(['gotpointercapture', 'lostpointercapture', 'pointercancel', 'pointerdown', 'pointerenter', 'pointerleave', 'pointermove', 'pointerout', 'pointerover', 'pointerup'], parsePointerEvent);
+function parsePointerEvent(event) {
+    return {
+        ...parseMouseEvent(event),
+        pointerId: event.pointerId,
+        width: event.width,
+        height: event.height,
+        pressure: event.pressure,
+        tiltX: event.tiltX,
+        tiltY: event.tiltY,
+        pointerType: event.pointerType,
+        isPrimary: event.isPrimary,
+    };
+}
+
+configureEvent(['wheel', 'mousewheel'], parseWheelEvent);
+function parseWheelEvent(event) {
+    return {
+        ...parseMouseEvent(event),
+        deltaX: event.deltaX,
+        deltaY: event.deltaY,
+        deltaZ: event.deltaZ,
+        deltaMode: event.deltaMode,
+    };
+}

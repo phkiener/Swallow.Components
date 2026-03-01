@@ -122,15 +122,10 @@ internal class ReactiveComponentRenderer(IServiceProvider serviceProvider, ILogg
         registration.DiscoverEventDescriptors(fragmentComponentId.Value, GetCurrentRenderTreeFrames);
     }
 
-    public EventArgs ParseEventArgs(ulong eventHandlerId, string? serializedArgs)
+    public EventArgs ParseEventArgs(ulong eventHandlerId, JsonElement arguments)
     {
-        if (serializedArgs is null)
-        {
-            return EventArgs.Empty;
-        }
-
         var expectedType = GetEventArgsType(eventHandlerId);
-        var eventArgs = (EventArgs?)JsonSerializer.Deserialize(serializedArgs, expectedType, EventSerializationOptions) ?? EventArgs.Empty;
+        var eventArgs = (EventArgs?)arguments.Deserialize(expectedType, EventSerializationOptions) ?? EventArgs.Empty;
 
         return eventArgs is ChangeEventArgs { Value: JsonElement jsonValue }
             ? new ChangeEventArgs { Value = jsonValue.Deserialize<string>() }

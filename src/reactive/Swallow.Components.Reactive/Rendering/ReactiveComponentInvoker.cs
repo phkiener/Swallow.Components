@@ -3,6 +3,8 @@ using System.Collections.Concurrent;
 using System.Net.Mime;
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -51,7 +53,7 @@ internal sealed class ReactiveComponentInvoker(
             try
             {
                 var form = await context.Request.ReadFormAsync();
-                var dispatchedEvent = ReadEvent(form);
+                var dispatchedEvents = ReadEvent(form);
                 var parameters = ReadComponentParameters(componentType, form);
                 store.Initialize(form);
 
@@ -63,7 +65,7 @@ internal sealed class ReactiveComponentInvoker(
                     await renderer.RenderReactiveFragmentAsync(componentType, parameters, context);
                     renderer.DiscoverEventHandlers(handlers);
 
-                    if (dispatchedEvent is not null)
+                    foreach (var dispatchedEvent in dispatchedEvents)
                     {
                         var descriptor = handlers.FindDescriptor(elementPath: dispatchedEvent.Element, eventName: dispatchedEvent.Event);
                         if (descriptor is null)
@@ -108,8 +110,6 @@ internal sealed class ReactiveComponentInvoker(
                 context.Response.StatusCode = StatusCodes.Status500InternalServerError;
                 await context.Response.WriteAsync(exception.Message);
                 await context.Response.CompleteAsync();
-
-                return;
             }
         });
 
@@ -121,17 +121,32 @@ internal sealed class ReactiveComponentInvoker(
         }
     }
 
-    private static DispatchedEvent? ReadEvent(IFormCollection form)
+    private static IEnumerable<DispatchedEvent> ReadEvent(IFormCollection form)
     {
-        if (form.TryGetValue(Constants.TriggeringElement, out var path) && form.TryGetValue(Constants.TriggeringEventName, out var eventName))
+        if (form.TryGetValue(Constants.TriggeringEvent, out var values))
         {
-            return new DispatchedEvent(
-                Element: path.ToString(),
-                Event: eventName.ToString(),
-                EventBody: form.TryGetValue(Constants.TriggeringEventBody, out var eventBody) ? eventBody.ToString() : null);
-        }
+            foreach (var value in values)
+            {
+                DispatchedEvent? dispatchedEvent = null;
+                try
+                {
+                    var interaction = JsonSerializer.Deserialize<Interaction>(value ?? "");
+                    if (interaction is not null)
+                    {
+                        dispatchedEvent = new DispatchedEvent(interaction.Trigger, interaction.EventName, interaction.EventBody);
+                    }
+                }
+                catch (JsonException)
+                {
+                    // Just ignore invalid data.
+                }
 
-        return null;
+                if (dispatchedEvent is not null)
+                {
+                    yield return dispatchedEvent;
+                }
+            }
+        }
     }
 
     private static Dictionary<string, object?> ReadComponentParameters(Type componentType, IFormCollection form)
@@ -171,5 +186,17 @@ internal sealed class ReactiveComponentInvoker(
         }
     }
 
-    private sealed record DispatchedEvent(string Element, string Event, string? EventBody);
+    private sealed record DispatchedEvent(string Element, string Event, JsonElement EventBody);
+
+    private sealed class Interaction
+    {
+        [JsonPropertyName("trigger")]
+        public required string Trigger { get; set; }
+
+        [JsonPropertyName("eventName")]
+        public required string EventName { get; set; }
+
+        [JsonPropertyName("eventBody")]
+        public required JsonElement EventBody { get; set; }
+    }
 }
