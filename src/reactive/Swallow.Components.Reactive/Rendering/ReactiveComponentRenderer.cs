@@ -15,6 +15,7 @@ using Microsoft.Extensions.Logging;
 using Swallow.Components.Reactive.Rendering;
 using Swallow.Components.Reactive.Rendering.EventHandlers;
 using Swallow.Components.Reactive.Rendering.State;
+using Swallow.Components.Reactive.Shims;
 
 namespace Swallow.Components.Reactive.Framework;
 
@@ -31,8 +32,7 @@ internal class ReactiveComponentRenderer(IServiceProvider serviceProvider, ILogg
     private readonly MemoizingDispatcher dispatcher = new(Dispatcher.CreateDefault());
 
     private ResourceAssetCollection? resourceCollection;
-    private TextWriter? streamingWriter;
-    private string? streamBoundary;
+    private StreamedResponseWriter? streamedResponse;
     private int? rootComponentId;
     private int? fragmentComponentId;
 
@@ -60,7 +60,7 @@ internal class ReactiveComponentRenderer(IServiceProvider serviceProvider, ILogg
         return base.CreateComponentState(componentId, component, parentComponentState);
     }
 
-    public async Task InitializeComponentServicesAsync(HttpContext context, ComponentStateStore store)
+    public async Task InitializeComponentServicesAsync(HttpContext context, ComponentStateStore store, IFormCollection form)
     {
         var navigationManager = serviceProvider.GetService<NavigationManager>();
         if (navigationManager is IHostEnvironmentNavigationManager hostEnvironmentNavigationManager)
@@ -86,6 +86,14 @@ internal class ReactiveComponentRenderer(IServiceProvider serviceProvider, ILogg
             {
                 listener.SetAuthenticationState(authenticationState);
             }
+        }
+
+        var formHandlerName = form["_handler"];
+        if (formHandlerName.Count is 1)
+        {
+            // This needs to be done to initialize the SupplyParameterFromForm cascading parameter.
+            var formDataProvider = HttpContextFormDataProvider.TryGet(serviceProvider);
+            formDataProvider?.SetFormData(formHandlerName[0]!, form.ToDictionary().AsReadOnly(), form.Files);
         }
 
         resourceCollection = context.GetEndpoint()?.Metadata.GetMetadata<ResourceAssetCollection>();
@@ -148,21 +156,20 @@ internal class ReactiveComponentRenderer(IServiceProvider serviceProvider, ILogg
         WriteComponentHtml(rootComponentId.Value, output);
     }
 
-    public void StreamUpdatesTo(TextWriter output, string boundary)
+    public void StreamUpdatesTo(StreamedResponseWriter target)
     {
-        streamingWriter = output;
-        streamBoundary = boundary;
+        streamedResponse = target;
     }
 
     [DebuggerDisableUserUnhandledExceptions]
     protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
     {
-        if (streamingWriter is not null && rootComponentId.HasValue)
+        if (streamedResponse is not null && rootComponentId.HasValue)
         {
-            WriteComponentHtml(rootComponentId.Value, streamingWriter);
-            streamingWriter.WriteLine(streamBoundary);
+            WriteComponentHtml(rootComponentId.Value, streamedResponse.Writer);
+            streamedResponse.Writer.WriteLine(streamedResponse.Boundary);
 
-            return streamingWriter.FlushAsync().ContinueWith(static _ => CanceledRenderTask);
+            return streamedResponse.Writer.FlushAsync().ContinueWith(static _ => CanceledRenderTask);
         }
 
         return CanceledRenderTask;
@@ -211,6 +218,7 @@ internal class ReactiveComponentRenderer(IServiceProvider serviceProvider, ILogg
 
         public async Task ProcessAsync()
         {
+            pendingTasks.RemoveAll(static t => t.IsCompleted || t.IsFaulted || t.IsCanceled);
             while (pendingTasks.Any())
             {
                 await Task.WhenAny(pendingTasks);

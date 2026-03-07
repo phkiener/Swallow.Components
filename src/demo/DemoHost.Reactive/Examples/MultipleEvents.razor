@@ -1,0 +1,25 @@
+@page "/reactive/multiple"
+
+@using Swallow.Components.Buttons
+@using Swallow.Components.Forms
+
+<SwInputText @bind-Value="Text" />
+<SwButton OnClick="@OnClick">Display</SwButton>
+
+@if (showMessage)
+{
+    <p>You entered @Text</p>
+}
+
+@code {
+
+    private bool showMessage = false;
+
+    [PersistentState]
+    public string? Text { get; set; }
+
+    public void OnClick()
+    {
+        showMessage = true;
+    }
+}
