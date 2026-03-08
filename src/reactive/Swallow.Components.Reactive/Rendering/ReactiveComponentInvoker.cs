@@ -28,6 +28,47 @@ internal sealed class ReactiveComponentInvoker(
 
     public async Task InvokeAsync(Type componentType, HttpContext context)
     {
+        // Validate;
+        //   expect header srx-request
+        //   expect header referer
+        //   on fail: log failure, 400 bad request
+
+        // Restore;
+        //   read parameters & state
+        //   read form fields?
+        //   initialize component services & state store
+        //   initial render
+        //      on navigation: 204 srx-redirect
+        //      on exception: 500
+        //   discover event handlers
+
+        // if streaming:
+        //   register streaming
+        //   await foreach event
+        //     find listener
+        //       on not found: log and skip
+        //       on "broken": log and skip
+        //     dispatch event
+        //       on navigation: ??
+        //       on exception: ??
+        //   process all tasks
+        //   discover handlers
+        //   persist state
+        //   process all tasks (to make sure we're done)
+        // else:
+        //   await foreach event
+        //     find listener
+        //       on not found: log and skip
+        //       on "broken": log and skip
+        //     dispatch event
+        //       on navigation: 204 srx-redirect
+        //       on exception: 500
+        //   process all tasks
+        //   discover handlers
+        //   persist state
+        //   process all tasks (to make sure we're done)
+        //   render result
+
         var form = await context.Request.ReadFormAsync();
         store.Initialize(form);
 
