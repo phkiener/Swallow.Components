@@ -115,7 +115,7 @@ internal sealed class ReactiveComponentInvoker(
         context.Response.ContentType = MediaTypeNames.Text.Html;
         context.Response.Headers["srx-response"] = "true";
 
-        var useStreaming = context.GetEndpoint()?.Metadata.GetMetadata<ReactiveComponentAttribute>()?.DisableStreaming is false;
+        var useStreaming = context.GetEndpoint()?.Metadata.GetMetadata<StreamRenderingAttribute>()?.Enabled is true;
 
         if (useStreaming)
         {

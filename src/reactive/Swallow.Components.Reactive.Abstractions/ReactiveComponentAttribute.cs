@@ -8,13 +8,4 @@ namespace Swallow.Components.Reactive;
 /// on top of a component declaration.
 /// </remarks>
 [AttributeUsage(AttributeTargets.Class, Inherited = true, AllowMultiple = false)]
-public sealed class ReactiveComponentAttribute : Attribute
-{
-    /// <summary>
-    /// Instead of streaming all DOM-updates to the client, only the final DOM is sent.
-    /// </summary>
-    /// <remarks>
-    /// This means that e.g. setting a "loading" state will <em>not</em> work.
-    /// </remarks>
-    public bool DisableStreaming { get; set; }
-}
+public sealed class ReactiveComponentAttribute : Attribute;
