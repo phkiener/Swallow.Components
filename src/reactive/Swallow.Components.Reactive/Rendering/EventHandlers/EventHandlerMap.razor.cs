@@ -26,7 +26,7 @@ public sealed partial class EventHandlerMap : ComponentBase, IDisposable
         eventDescriptors.Clear();
         eventDescriptors.AddRange(Handlers.Descriptors);
 
-        StateHasChanged();
+        _ = InvokeAsync(StateHasChanged);
     }
 
     /// <inheritdoc />

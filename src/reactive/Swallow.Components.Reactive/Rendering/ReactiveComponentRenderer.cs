@@ -126,7 +126,6 @@ internal class ReactiveComponentRenderer(IServiceProvider serviceProvider, ILogg
             return;
         }
 
-        ProcessPendingRender();
         registration.DiscoverEventDescriptors(fragmentComponentId.Value, GetCurrentRenderTreeFrames);
     }
 
@@ -166,10 +165,10 @@ internal class ReactiveComponentRenderer(IServiceProvider serviceProvider, ILogg
     {
         if (streamedResponse is not null && rootComponentId.HasValue)
         {
-            WriteComponentHtml(rootComponentId.Value, streamedResponse.Writer);
-            streamedResponse.Writer.WriteLine(streamedResponse.Boundary);
+            using var stringStream = new StringWriter();
+            WriteComponentHtml(rootComponentId.Value, streamedResponse);
 
-            return streamedResponse.Writer.FlushAsync().ContinueWith(static _ => CanceledRenderTask);
+            return streamedResponse.FlushAsync().ContinueWith(static _ => CanceledRenderTask);
         }
 
         return CanceledRenderTask;

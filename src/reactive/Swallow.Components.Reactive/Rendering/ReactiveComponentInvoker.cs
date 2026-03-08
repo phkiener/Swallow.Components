@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 using Swallow.Components.Reactive.Rendering;
 using Swallow.Components.Reactive.Rendering.EventHandlers;
 using Swallow.Components.Reactive.Rendering.State;
@@ -28,177 +29,217 @@ internal sealed class ReactiveComponentInvoker(
 
     public async Task InvokeAsync(Type componentType, HttpContext context)
     {
-        // Validate;
-        //   expect header srx-request
-        //   expect header referer
-        //   on fail: log failure, 400 bad request
+        if (!IsValidRequest(context.Request))
+        {
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
 
-        // Restore;
-        //   read parameters & state
-        //   read form fields?
-        //   initialize component services & state store
-        //   initial render
-        //      on navigation: 204 srx-redirect
-        //      on exception: 500
-        //   discover event handlers
-
-        // if streaming:
-        //   register streaming
-        //   await foreach event
-        //     find listener
-        //       on not found: log and skip
-        //       on "broken": log and skip
-        //     dispatch event
-        //       on navigation: ??
-        //       on exception: ??
-        //   process all tasks
-        //   discover handlers
-        //   persist state
-        //   process all tasks (to make sure we're done)
-        // else:
-        //   await foreach event
-        //     find listener
-        //       on not found: log and skip
-        //       on "broken": log and skip
-        //     dispatch event
-        //       on navigation: 204 srx-redirect
-        //       on exception: 500
-        //   process all tasks
-        //   discover handlers
-        //   persist state
-        //   process all tasks (to make sure we're done)
-        //   render result
+            return;
+        }
 
         var form = await context.Request.ReadFormAsync();
-        store.Initialize(form);
+        var hydrationResult = await RehydrateAsync(context, componentType, form);
+        if (hydrationResult is RenderResult.Navigation { Location: var hydrationRedirect })
+        {
+            context.Response.StatusCode = StatusCodes.Status204NoContent;
+            context.Response.Headers["srx-redirect"] = hydrationRedirect;
+            context.Response.Headers["srx-response"] = "true";
 
-        await renderer.InitializeComponentServicesAsync(context, store, form);
+            return;
+        }
+
+        if (hydrationResult is RenderResult.Error { Exception: var hydrationException })
+        {
+            logger.LogError(hydrationException, "Unhandled exception while rendering");
+
+            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+            context.Response.Headers["srx-response"] = "true";
+
+            await context.Response.WriteAsync(hydrationException.Message);
+
+            return;
+        }
+
+        var dispatchedEvents = ReadEvent(form);
+        renderer.DiscoverEventHandlers(handlers);
+
+        var useStreaming = context.GetEndpoint()?.Metadata.GetMetadata<StreamRenderingAttribute>()?.Enabled is true;
+        if (useStreaming)
+        {
+            context.Response.StatusCode = StatusCodes.Status200OK;
+            context.Response.ContentType = MediaTypeNames.Text.Html;
+            context.Response.Headers["srx-response"] = "true";
+
+            await using var responseWriter = new StreamedResponseWriter(
+                stream: context.Response.Body,
+                encoding: Encoding.UTF8,
+                bufferSize: 16 * 1024,
+                bytePool: ArrayPool<byte>.Shared,
+                charPool: ArrayPool<char>.Shared);
+
+            context.Response.Headers["srx-streaming-marker"] = responseWriter.Boundary;
+            renderer.StreamUpdatesTo(responseWriter);
+
+            foreach (var dispatchedEvent in dispatchedEvents)
+            {
+                var eventResult = await DispatchEventAsync(dispatchedEvent);
+                if (eventResult is RenderResult.Navigation)
+                {
+                    // TODO Handle redirect
+                    return;
+                }
+
+                if (eventResult is RenderResult.Error)
+                {
+                    // TODO Handle error
+                    return;
+                }
+            }
+
+            await renderer.ProcessPendingTasksAsync();
+
+            renderer.DiscoverEventHandlers(handlers);
+            await stateManager.PersistStateAsync(store, renderer);
+
+            await renderer.ProcessPendingTasksAsync();
+        }
+        else
+        {
+            foreach (var dispatchedEvent in dispatchedEvents)
+            {
+                var eventResult = await DispatchEventAsync(dispatchedEvent);
+                if (eventResult is RenderResult.Navigation { Location: var eventRedirect })
+                {
+                    context.Response.StatusCode = StatusCodes.Status204NoContent;
+                    context.Response.Headers["srx-redirect"] = eventRedirect;
+                    context.Response.Headers["srx-response"] = "true";
+
+                    return;
+                }
+
+                if (eventResult is RenderResult.Error { Exception: var eventException })
+                {
+                    logger.LogError(eventException, "Unhandled exception while applying event");
+
+                    context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                    context.Response.Headers["srx-response"] = "true";
+
+                    await context.Response.WriteAsync(eventException.Message);
+
+                    return;
+                }
+            }
+
+            await renderer.ProcessPendingTasksAsync();
+
+            renderer.DiscoverEventHandlers(handlers);
+            await stateManager.PersistStateAsync(store, renderer);
+
+            await renderer.ProcessPendingTasksAsync();
+
+            context.Response.StatusCode = StatusCodes.Status200OK;
+            context.Response.ContentType = MediaTypeNames.Text.Html;
+            context.Response.Headers["srx-response"] = "true";
+
+            await using var responseWriter = new HttpResponseStreamWriter(
+                stream: context.Response.Body,
+                encoding: Encoding.UTF8,
+                bufferSize: 16 * 1024,
+                bytePool: ArrayPool<byte>.Shared,
+                charPool: ArrayPool<char>.Shared);
+
+            await renderer.Dispatcher.InvokeAsync(() => renderer.WriteHtmlTo(responseWriter));
+        }
+    }
+
+    private bool IsValidRequest(HttpRequest request)
+    {
+        if (!request.Headers.ContainsKey("srx-request"))
+        {
+            logger.LogWarning("Request to {Invoker} without {Header} received.", nameof(ReactiveComponentInvoker), "srx-request");
+            return false;
+        }
+
+        if (!request.Headers.ContainsKey(HeaderNames.Referer))
+        {
+            logger.LogWarning("Request to {Invoker} without {Header} received.", nameof(ReactiveComponentInvoker), HeaderNames.Referer);
+            return false;
+        }
+
+        return true;
+    }
+
+    private abstract record RenderResult
+    {
+        public sealed record Success : RenderResult;
+
+        public sealed record Navigation(string Location) : RenderResult;
+
+        public sealed record Error(Exception Exception) : RenderResult;
+    }
+
+    private async Task<RenderResult> RehydrateAsync(HttpContext context, Type componentType, IFormCollection form)
+    {
+        try
+        {
+            store.Initialize(form);
+            await renderer.InitializeComponentServicesAsync(context, store, form);
+
+            var parameters = ReadComponentParameters(componentType, form);
+            await renderer.Dispatcher.InvokeAsync(() => renderer.RenderReactiveFragmentAsync(componentType, parameters, context));
+        }
+        catch (NavigationException navigation)
+        {
+            return new RenderResult.Navigation(navigation.Location);
+        }
+        catch (Exception exception)
+        {
+            return new RenderResult.Error(exception);
+        }
+
+        return new RenderResult.Success();
+    }
+
+    private async Task<RenderResult> DispatchEventAsync(DispatchedEvent dispatchedEvent)
+    {
+        var descriptor = handlers.FindDescriptor(elementPath: dispatchedEvent.Element, eventName: dispatchedEvent.Event);
+        if (descriptor is null)
+        {
+            logger.LogError(
+                "Event {EventName} on element {TriggeringElementPath} did not match any event handler.",
+                dispatchedEvent.Event,
+                dispatchedEvent.Element);
+
+            return new RenderResult.Success();
+        }
+
+        var eventArgs = renderer.ParseEventArgs(descriptor.Value.EventHandlerId, dispatchedEvent.EventBody);
+        var fieldInfo = new EventFieldInfo { ComponentId = descriptor.Value.ComponentId };
+        if (eventArgs is ChangeEventArgs { Value: not null and var changedValue })
+        {
+            fieldInfo.FieldValue = changedValue;
+        }
 
         try
         {
             await renderer.Dispatcher.InvokeAsync(async () =>
             {
-                var parameters = ReadComponentParameters(componentType, form);
-                await renderer.RenderReactiveFragmentAsync(componentType, parameters, context);
-                renderer.DiscoverEventHandlers(handlers);
+                await renderer.DispatchEventAsync(
+                    eventHandlerId: descriptor.Value.EventHandlerId,
+                    fieldInfo: fieldInfo,
+                    eventArgs: eventArgs,
+                    waitForQuiescence: true);
             });
         }
         catch (NavigationException navigation)
         {
-            context.Response.StatusCode = StatusCodes.Status204NoContent;
-            context.Response.Headers["srx-redirect"] = navigation.Location;
-            context.Response.Headers["srx-response"] = "true";
-
-            await context.Response.CompleteAsync();
-
-            return;
+            return new RenderResult.Navigation(navigation.Location);
         }
         catch (Exception exception)
         {
-            logger.LogError(exception, "Unhandled exception while rendering");
-
-            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-            context.Response.Headers["srx-response"] = "true";
-
-            await context.Response.WriteAsync(exception.Message);
-            await context.Response.CompleteAsync();
+            return new RenderResult.Error(exception);
         }
 
-        await using var responseWriter = new HttpResponseStreamWriter(
-            stream: context.Response.Body,
-            encoding: Encoding.UTF8,
-            bufferSize: 16 * 1024,
-            bytePool: ArrayPool<byte>.Shared,
-            charPool: ArrayPool<char>.Shared);
-
-        context.Response.StatusCode = StatusCodes.Status200OK;
-        context.Response.ContentType = MediaTypeNames.Text.Html;
-        context.Response.Headers["srx-response"] = "true";
-
-        var useStreaming = context.GetEndpoint()?.Metadata.GetMetadata<StreamRenderingAttribute>()?.Enabled is true;
-
-        if (useStreaming)
-        {
-            var stream = new StreamedResponseWriter(responseWriter);
-            context.Response.Headers["srx-streaming-marker"] = stream.Boundary;
-            renderer.StreamUpdatesTo(stream);
-        }
-
-        foreach (var dispatchedEvent in ReadEvent(form))
-        {
-            var descriptor = handlers.FindDescriptor(elementPath: dispatchedEvent.Element, eventName: dispatchedEvent.Event);
-            if (descriptor is null)
-            {
-                logger.LogError(
-                    "Event {EventName} on element {TriggeringElementPath} did not match any event handler.",
-                    dispatchedEvent.Event,
-                    dispatchedEvent.Element);
-
-                continue;
-            }
-
-            var eventArgs = renderer.ParseEventArgs(descriptor.Value.EventHandlerId, dispatchedEvent.EventBody);
-            var fieldInfo = new EventFieldInfo { ComponentId = descriptor.Value.ComponentId };
-            if (eventArgs is ChangeEventArgs { Value: not null and var changedValue })
-            {
-                fieldInfo.FieldValue = changedValue;
-            }
-
-            try
-            {
-                await renderer.Dispatcher.InvokeAsync(async () =>
-                {
-                    await renderer.DispatchEventAsync(
-                        eventHandlerId: descriptor.Value.EventHandlerId,
-                        fieldInfo: fieldInfo,
-                        eventArgs: eventArgs,
-                        waitForQuiescence: true);
-                });
-            }
-            catch (NavigationException navigation)
-            {
-                if (useStreaming)
-                {
-                    // TODO: Stream the navigation?
-                }
-                else
-                {
-                    context.Response.StatusCode = StatusCodes.Status204NoContent;
-                    context.Response.Headers["srx-redirect"] = navigation.Location;
-                    await context.Response.CompleteAsync();
-
-                    return;
-                }
-            }
-            catch (Exception exception)
-            {
-                if (useStreaming)
-                {
-                    // TODO: Stream the error? Abort?
-                }
-                else
-                {
-                    logger.LogError(exception, "Unhandled exception while rendering");
-
-                    context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-                    await context.Response.WriteAsync(exception.Message);
-                    await context.Response.CompleteAsync();
-                }
-            }
-        }
-
-        await renderer.ProcessPendingTasksAsync();
-        await renderer.Dispatcher.InvokeAsync(async () =>
-        {
-            renderer.DiscoverEventHandlers(handlers);
-            await stateManager.PersistStateAsync(store, renderer);
-        });
-
-        await renderer.ProcessPendingTasksAsync();
-        if (!useStreaming)
-        {
-            await renderer.Dispatcher.InvokeAsync(() => renderer.WriteHtmlTo(responseWriter));
-        }
+        return new RenderResult.Success();
     }
 
     private static IEnumerable<DispatchedEvent> ReadEvent(IFormCollection form)

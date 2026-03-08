@@ -96,7 +96,14 @@ class ReactiveFragment {
         this.#interactions = [];
 
         try {
-            const response = await fetch(route, { method: "POST", body: formData });
+            const response = await fetch(
+                route,
+                {
+                    method: "POST",
+                    headers: { "srx-request": "true" },
+                    body: formData
+                });
+
             await this.#handleResponse(response);
         } catch (error) {
             console.error("srx request failed: " + error);
