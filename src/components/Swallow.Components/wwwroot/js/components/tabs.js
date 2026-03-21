@@ -1,5 +1,5 @@
-export default function register() {
-    const tabs = [...document.querySelectorAll(".sw.tab-container > header input[type='radio'][data-register]")];
+export default function register(element) {
+    const tabs = [...element.querySelectorAll(".sw.tab-container > header input[type='radio'][data-register]")];
 
     for(const tab of tabs) {
         tab.addEventListener("change", e => activateTab(e.target));
