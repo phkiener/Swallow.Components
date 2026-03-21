@@ -1,0 +1,40 @@
+.sw.popover-trigger {
+    appearance: none;
+    background: none;
+    outline: none;
+    border: none;
+}
+
+.sw.popover-trigger.inline {
+    display: inline;
+}
+
+.sw.popover-trigger.block {
+    display: block;
+}
+
+.sw.popover {
+    border: none;
+
+    --offset: 0.5rem;
+}
+
+.sw.popover.above {
+    position-area: top span-all;
+    bottom: var(--offset);
+}
+
+.sw.popover.below {
+    position-area: bottom span-all;
+    top: var(--offset);
+}
+
+.sw.popover.left {
+    position-area: span-all left;
+    right: var(--offset);
+}
+
+.sw.popover.right {
+    position-area: span-all right;
+    left: var(--offset);
+}

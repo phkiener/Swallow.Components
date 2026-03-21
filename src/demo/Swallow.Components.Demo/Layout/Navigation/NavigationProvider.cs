@@ -46,6 +46,7 @@ public static class NavigationProvider
         yield return new NavigationItem.Link("Tabs", Routes.Pages.Layout.TabsPage);
         yield return new NavigationItem.Header("Overlay");
         yield return new NavigationItem.Link("Tooltip", Routes.Pages.Overlays.TooltipPage);
+        yield return new NavigationItem.Link("Popover", Routes.Pages.Overlays.PopoverPage);
     }
 
     private static IEnumerable<NavigationSection> EnumerateSections()

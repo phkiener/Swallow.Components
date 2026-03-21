@@ -1,0 +1,15 @@
+<button type="button"
+        class="sw popover-trigger @triggerClass"
+        command="show-popover"
+        commandfor="$next .sw.popover"
+        style="anchor-name: --@anchorName">
+    Plop
+</button>
+
+<div class="sw popover @popoverClass" style="position-anchor: --@anchorName" popover="auto">
+    Plip
+
+    <button type="button" command="hide-popover" commandfor="$closest .sw.popover">
+        X
+    </button>
+</div>
