@@ -1,0 +1,35 @@
+.sw.tooltip {
+    position: absolute;
+
+    background: light-dark(var(--color-black), var(--color-white));
+    color: light-dark(var(--color-white), var(--color-black));
+    padding: 0.25rem 0.5rem;
+
+    opacity: 0;
+
+    --offset: 0.5rem;
+}
+
+.sw.tooltip.above {
+    position-area: top span-all;
+    bottom: var(--offset);
+}
+
+.sw.tooltip.below {
+    position-area: bottom span-all;
+    top: var(--offset);
+}
+
+.sw.tooltip.left {
+    position-area: span-all left;
+    right: var(--offset);
+}
+
+.sw.tooltip.right {
+    position-area: span-all right;
+    left: var(--offset);
+}
+
+.sw.tooltip-trigger:hover + .sw.tooltip {
+    opacity: 1;
+}

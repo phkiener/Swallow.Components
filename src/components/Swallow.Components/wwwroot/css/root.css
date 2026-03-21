@@ -6,3 +6,4 @@
 @import "components/field.css" layer(component);
 @import "components/input.css" layer(component);
 @import "components/tabs.css" layer(component);
+@import "components/tooltip.css" layer(component);
