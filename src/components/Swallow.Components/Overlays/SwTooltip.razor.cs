@@ -43,6 +43,18 @@ public sealed partial class SwTooltip : ComponentBase
     [Parameter]
     public Position TooltipPosition { get; set; } = Position.Below;
 
+    /// <summary>
+    /// Callback that is invoked when the tooltip is being shown.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnTooltipShown { get; set; }
+
+    /// <summary>
+    /// Callback that is invoked when the tooltip is no longer being shown.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnTooltipHidden { get; set; }
+
     protected override void OnParametersSet()
     {
         tooltipClass = TooltipPosition switch
