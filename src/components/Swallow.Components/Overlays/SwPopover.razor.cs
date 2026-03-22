@@ -2,6 +2,10 @@ using Microsoft.AspNetCore.Components;
 
 namespace Swallow.Components.Overlays;
 
+/// <summary>
+/// A tooltip that reveals the <see cref="PopoverContent"/> when clicking
+/// the <see cref="TriggerContent"/>.
+/// </summary>
 public sealed partial class SwPopover : ComponentBase
 {
     private readonly string anchorName = $"sw-{Guid.NewGuid():N}";
@@ -24,7 +28,7 @@ public sealed partial class SwPopover : ComponentBase
     /// </summary>
     [Parameter]
     [EditorRequired]
-    public required RenderFragment TooltipContent { get; set; }
+    public required RenderFragment PopoverContent { get; set; }
 
     /// <summary>
     /// Whether to wrap <see cref="TriggerContent"/> inside a
@@ -34,23 +38,26 @@ public sealed partial class SwPopover : ComponentBase
     public DisplayMode DisplayMode { get; set; } = DisplayMode.Inline;
 
     /// <summary>
-    /// Where to position the <see cref="TooltipContent"/> relative to
+    /// Where to position the <see cref="PopoverContent"/> relative to
     /// <see cref="TriggerContent"/>.
     /// </summary>
     [Parameter]
-    public Position TooltipPosition { get; set; } = Position.Below;
+    public Position PopoverPosition { get; set; } = Position.Below;
 
     /// <summary>
-    /// Callback that is invoked when the tooltip is being shown.
+    /// Callback that is invoked when the popover is <em>toggled</em>, i.e.
+    /// both when it is being shown and being hidden.
     /// </summary>
+    /// <remarks>
+    /// It is both triggered when the popover is shown, <em>and</em> when
+    /// it is hidden. This is due to the fact that, fundamentally, we're
+    /// relying on the <c>toggle</c> event on the element. Blazor configured
+    /// this event to a plain <see cref="EventArgs"/> instead of an e.g.
+    /// <c>ToggleEventArgs</c> containing the new state - so we simply
+    /// don't know whether the popover was opened or closed.
+    /// </remarks>
     [Parameter]
-    public EventCallback OnTooltipShown { get; set; }
-
-    /// <summary>
-    /// Callback that is invoked when the tooltip is no longer being shown.
-    /// </summary>
-    [Parameter]
-    public EventCallback OnTooltipHidden { get; set; }
+    public EventCallback OnTriggered { get; set; }
 
     protected override void OnParametersSet()
     {
@@ -61,13 +68,13 @@ public sealed partial class SwPopover : ComponentBase
             _ => throw new ArgumentOutOfRangeException(nameof(DisplayMode))
         };
 
-        popoverClass = TooltipPosition switch
+        popoverClass = PopoverPosition switch
         {
             Position.Above => "above",
             Position.Below => "below",
             Position.Left => "left",
             Position.Right => "right",
-            _ => throw new ArgumentOutOfRangeException(nameof(TooltipPosition))
+            _ => throw new ArgumentOutOfRangeException(nameof(PopoverPosition))
         };
     }
 }

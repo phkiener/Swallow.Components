@@ -1,20 +1,11 @@
-@if (DisplayMode is DisplayMode.Block)
-{
-    <div class="sw tooltip-trigger"
-         style="anchor-name: --@anchorName"
-         @onmouseenter="@OnTooltipShown"
-         @onmouseleave="@OnTooltipHidden">
-        @TriggerContent
-    </div>
-}
-else
-{
-    <span class="sw tooltip-trigger"
-          style="anchor-name: --@anchorName"
-          @onmouseenter="@OnTooltipShown"
-          @onmouseleave="@OnTooltipHidden">
-        @TriggerContent
-    </span>
-}
+<div class="sw tooltip-trigger @triggerClass"
+     style="anchor-name: --@anchorName"
+     @onmouseenter="@OnTriggered"
+     @onmouseleave="@OnTriggered">
+    @TriggerContent
+</div>
 
-<div class="sw tooltip @tooltipClass" style="position-anchor: --@anchorName">@TooltipContent</div>
+<div class="sw tooltip @tooltipClass"
+     style="position-anchor: --@anchorName">
+    @TooltipContent
+</div>

@@ -1,3 +1,11 @@
+.sw.tooltip-trigger.inline {
+    display: inline;
+}
+
+.sw.tooltip-trigger.block {
+    display: block;
+}
+
 .sw.tooltip {
     position: absolute;
 

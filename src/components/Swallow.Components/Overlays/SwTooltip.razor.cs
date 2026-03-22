@@ -10,6 +10,7 @@ public sealed partial class SwTooltip : ComponentBase
 {
     private readonly string anchorName = $"sw-{Guid.NewGuid():N}";
     private string? tooltipClass;
+    private string? triggerClass;
 
     /// <summary>
     /// The content that triggers the tooltip.
@@ -44,19 +45,29 @@ public sealed partial class SwTooltip : ComponentBase
     public Position TooltipPosition { get; set; } = Position.Below;
 
     /// <summary>
-    /// Callback that is invoked when the tooltip is being shown.
+    /// Callback that is invoked when the popover is <em>toggled</em>, i.e.
+    /// both when it is being shown and being hidden.
     /// </summary>
+    /// <remarks>
+    /// It is both triggered when the popover is shown, <em>and</em> when
+    /// it is hidden. This is due to the fact that, fundamentally, we're
+    /// relying on the <c>toggle</c> event on the element. Blazor configured
+    /// this event to a plain <see cref="EventArgs"/> instead of an e.g.
+    /// <c>ToggleEventArgs</c> containing the new state - so we simply
+    /// don't know whether the popover was opened or closed.
+    /// </remarks>
     [Parameter]
-    public EventCallback OnTooltipShown { get; set; }
-
-    /// <summary>
-    /// Callback that is invoked when the tooltip is no longer being shown.
-    /// </summary>
-    [Parameter]
-    public EventCallback OnTooltipHidden { get; set; }
+    public EventCallback OnTriggered { get; set; }
 
     protected override void OnParametersSet()
     {
+        triggerClass = DisplayMode switch
+        {
+            DisplayMode.Inline => "inline",
+            DisplayMode.Block => "block",
+            _ => throw new ArgumentOutOfRangeException(nameof(DisplayMode))
+        };
+
         tooltipClass = TooltipPosition switch
         {
             Position.Above => "above",

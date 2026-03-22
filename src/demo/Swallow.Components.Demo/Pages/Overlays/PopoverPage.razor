@@ -6,9 +6,9 @@
 <div style="display: flex; flex-direction: column; gap: 2lh; align-items: center">
 @foreach (var position in Enum.GetValues<Position>())
 {
-    <SwPopover TooltipPosition="position">
-        <TriggerContent>Hover me</TriggerContent>
-        <TooltipContent>I am a secret</TooltipContent>
+    <SwPopover PopoverPosition="position" OnTriggered="@(() => Console.WriteLine("triggered"))">
+        <TriggerContent>Click me</TriggerContent>
+        <PopoverContent>I am a secret</PopoverContent>
     </SwPopover>
 }
 </div>
