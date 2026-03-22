@@ -6,7 +6,7 @@
 <div style="display: flex; flex-direction: column; gap: 2lh; align-items: center">
 @foreach (var position in Enum.GetValues<Position>())
 {
-    <SwTooltip TooltipPosition="position" OnTriggered="@(() => Console.WriteLine("triggered"))">
+    <SwTooltip TooltipPosition="position">
         <TriggerContent>Hover me</TriggerContent>
         <TooltipContent>I am a secret</TooltipContent>
     </SwTooltip>
