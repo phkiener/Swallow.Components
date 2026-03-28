@@ -1,0 +1,16 @@
+<Project>
+  <ItemGroup>
+    <Content Remove="$(MSBuildThisFileDirectory)/node_modules/**/*" />
+
+    <FrontendBuild Include="$(MSBuildThisFileDirectory)**/*.ts" Exclude="$(MSBuildThisFileDirectory)node_modules/**/*" />
+    <FrontendBuild Include="$(MSBuildThisFileDirectory)**/*.js" Exclude="$(MSBuildThisFileDirectory)node_modules/**/*" />
+    <Content Remove="@(FrontendBuild)" />
+
+    <FrontendConfig Include="$(MSBuildThisFileDirectory)package.json" />
+    <FrontendConfig Include="$(MSBuildThisFileDirectory)package-lock.json" />
+    <Content Remove="@(FrontendConfig)" />
+
+    <None Include="@(FrontendBuild)" />
+    <None Include="@(FrontendConfig)" />
+  </ItemGroup>
+</Project>

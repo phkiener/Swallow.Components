@@ -1,4 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <Import Project="Client/FrontendBuild.props" />
+  <Import Project="Client/FrontendBuild.targets" />
   
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />

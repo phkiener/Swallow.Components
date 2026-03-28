@@ -1,0 +1,65 @@
+<Project>
+
+  <Target Name="_SetupNodeInstall">
+    <ItemGroup>
+      <_DependencyInstallStamp Include="$(BaseIntermediateOutputPath)dependencies.stamp" />
+      <_FrontendBuildStamp Include="$(IntermediateOutputPath)dist-build.stamp" />
+      <_FrontendInputs Include="@(FrontendBuild)" />
+      <_FrontendInputs Include="@(FrontendConfig)" />
+
+      <_FrontendTarget Include="$(IntermediateOutputPath)dist/**/*" />
+      <Content Include="@(_FrontendTarget)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_InstallDependencies" DependsOnTargets="_SetupNodeInstall" Inputs="@(FrontendConfig)" Outputs="@(_DependencyInstallStamp)">
+    <Exec Command="npm install"
+          EchoOff="true"
+          WorkingDirectory="$(MSBuildThisFileDirectory)" />
+
+    <PropertyGroup>
+      <_Timestamp>$([System.DateTime]::Now.ToString('yyyy.MM.dd HH:mm:ss'))</_Timestamp>
+    </PropertyGroup>
+    <WriteLinesToFile File="@(_DependencyInstallStamp)" Overwrite="true" Lines="$(_Timestamp)" />
+  </Target>
+
+  <Target Name="_BundleClient" BeforeTargets="PrepareForBuild" DependsOnTargets="_InstallDependencies" Inputs="@(_FrontendInputs)" Outputs="@(_FrontendBuildStamp)" >
+    <Exec Command="npx tsdown --no-config --clean --out-dir ../$(IntermediateOutputPath)dist/ --sourcemap --platform browser --target esnext --minify --format esm index.ts"
+          EchoOff="true"
+          WorkingDirectory="$(MSBuildThisFileDirectory)" />
+
+    <PropertyGroup>
+      <_Timestamp>$([System.DateTime]::Now.ToString('yyyy.MM.dd HH:mm:ss'))</_Timestamp>
+    </PropertyGroup>
+    <WriteLinesToFile File="@(_FrontendBuildStamp)" Overwrite="true" Lines="$(_Timestamp)" />
+  </Target>
+
+  <Target Name="_IncludeBundledAssets" BeforeTargets="ResolveBuildCompressedStaticWebAssetsConfiguration;GenerateStaticWebAssetsManifest" DependsOnTargets="_BundleClient">
+    <DefineStaticWebAssets
+      CandidateAssets="@(_FrontendTarget)"
+      SourceId="$(PackageId)"
+      RelativePathPattern="$(IntermediateOutputPath)dist/**/*"
+      ContentRoot="$(MSBuildProjectDirectory)"
+      SourceType="Discovered"
+      BasePath="$(StaticWebAssetBasePath)"
+      AssetMergeSource="$(StaticWebAssetMergeTarget)"
+      FingerprintCandidates="$(StaticWebAssetsFingerprintContent)"
+      FingerprintPatterns="@(StaticWebAssetFingerprintPattern)"
+      CacheManifestPath="$(_ResolveJSModuleStaticWebAssetsRazorCachePath)">
+      <Output TaskParameter="Assets" ItemName="_BundledAssets" />
+    </DefineStaticWebAssets>
+
+    <DefineStaticWebAssetEndpoints
+      CandidateAssets="@(_BundledAssets)"
+      ExistingEndpoints="@(StaticWebAssetEndpoint)"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)">
+      <Output TaskParameter="Endpoints" ItemName="_BundledAssetsEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+
+    <ItemGroup>
+      <StaticWebAsset Include="@(_BundledAssets)" />
+      <StaticWebAssetEndpoint Include="@(_BundledAssetsEndpoint)" />
+    </ItemGroup>
+  </Target>
+
+</Project>
