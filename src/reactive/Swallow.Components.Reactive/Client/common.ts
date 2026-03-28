@@ -13,9 +13,11 @@ export interface Context {
 
 export interface Fragment {
     getContext(): Context;
-    handle(command: Command): Promise<void>;
+    getRoute(): string;
+    handle(command: Response): Promise<void>;
 }
 
-export type Command = RenderCommand | RedirectCommand;
+export type Response = RenderCommand | RedirectCommand | Exception;
 export type RenderCommand = { content: string, kind: "render" };
 export type RedirectCommand = { location: string, kind: "redirect" };
+export type Exception = { message: Error, kind: "error" };

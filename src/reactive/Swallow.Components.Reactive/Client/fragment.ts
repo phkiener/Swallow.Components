@@ -47,6 +47,15 @@ export class ReactiveFragment implements common.Fragment {
         return this.transport.send(interaction);
     }
 
+    public getRoute(): string {
+        const route = this.element.getAttribute("srx-route");
+        if (!route) {
+            throw new Error(`Fragment ${this.element.id} is missing the 'srx-route' attribute`);
+        }
+
+        return route;
+    }
+
     public getContext(): common.Context {
         const context: common.Context = {
             route: document.location,
@@ -76,7 +85,7 @@ export class ReactiveFragment implements common.Fragment {
         return context;
     }
 
-    public async handle(command: common.Command): Promise<void> {
+    public async handle(command: common.Response): Promise<void> {
         if (command.kind === "render") {
             this.swapContent(command.content);
             return;
