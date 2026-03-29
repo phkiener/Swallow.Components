@@ -56,7 +56,7 @@ export class RequestBasedTransport implements Transport {
             this.fragment.getRoute(),
             { method: "POST", body: formData, headers: { "srx-request": "true" } });
 
-        if (response.headers.has("srx-response")) {
+        if (!response.headers.has("srx-response")) {
             throw new Error("srx-request not handled by matching endpoint.");
         }
 
@@ -101,7 +101,7 @@ export class RequestBasedTransport implements Transport {
         }
 
         for (const key in context.state) {
-            formData.append(`_srx-state-${key}`, context.parameters[key]);
+            formData.append(`_srx-state-${key}`, context.state[key]);
         }
 
         for (const interaction of interactions) {

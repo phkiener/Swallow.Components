@@ -79,7 +79,7 @@ export class ReactiveFragment implements common.Fragment {
 
         for (const stateElement of [...this.element.querySelectorAll("& > meta[itemprop='state'][data-key][data-value]")]) {
             const key: string = stateElement.getAttribute("data-key")!;
-            context.parameters[key] = stateElement.getAttribute("data-value")!;
+            context.state[key] = stateElement.getAttribute("data-value")!;
         }
 
         return context;
