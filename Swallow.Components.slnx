@@ -25,6 +25,7 @@
     <Project Path="src/components/Swallow.Components/Swallow.Components.csproj" />
   </Folder>
   <Folder Name="/Packages/Reactive/">
+    <File Path="src/reactive/README.md" />
     <Project Path="src/reactive/Swallow.Components.Reactive.Abstractions/Swallow.Components.Reactive.Abstractions.csproj" />
     <Project Path="src/reactive/Swallow.Components.Reactive/Swallow.Components.Reactive.csproj" />
   </Folder>
