@@ -1,7 +1,0 @@
-{
-  "private": true,
-  "devDependencies": {
-    "tsdown": "^0.21.7",
-    "typescript": "^6.0.2"
-  }
-}

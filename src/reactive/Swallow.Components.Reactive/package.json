@@ -1,0 +1,10 @@
+{
+  "private": true,
+  "devDependencies": {
+    "tsdown": "^0.21.7",
+    "typescript": "^6.0.2"
+  },
+  "scripts": {
+    "build": "npx tsdown --no-config --clean --out-dir $OUT_DIR --sourcemap --platform browser --target esnext --minify --format esm index.ts"
+  }
+}

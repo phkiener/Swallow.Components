@@ -1,13 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
-  <Import Project="Client/FrontendBuild.props" />
-  <Import Project="Client/FrontendBuild.targets" />
-  
+
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Swallow.MSBuild.Node" Version="0.1.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>build</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
-  
+
   <ItemGroup>
     <ProjectReference Include="..\Swallow.Components.Reactive.Abstractions\Swallow.Components.Reactive.Abstractions.csproj" />
   </ItemGroup>
-  
+
 </Project>
