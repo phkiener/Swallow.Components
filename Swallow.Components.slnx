@@ -28,6 +28,7 @@
     <File Path="src/reactive/README.md" />
     <Project Path="src/reactive/Swallow.Components.Reactive.Abstractions/Swallow.Components.Reactive.Abstractions.csproj" />
     <Project Path="src/reactive/Swallow.Components.Reactive/Swallow.Components.Reactive.csproj" />
+    <Project Path="test/reactive/Swallow.Components.Reactive.Test/Swallow.Components.Reactive.Test.csproj" />
   </Folder>
   <Folder Name="/Packages/Utilities/">
     <Project Path="src/utilities/Swallow.Components.RouteGenerator/Swallow.Components.RouteGenerator.csproj" />

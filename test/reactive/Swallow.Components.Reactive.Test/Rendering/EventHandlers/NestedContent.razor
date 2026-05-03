@@ -1,0 +1,12 @@
+<div>@FirstContent</div>
+<div>@SecondContent</div>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public required RenderFragment FirstContent { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public required RenderFragment SecondContent { get; set; }
+}

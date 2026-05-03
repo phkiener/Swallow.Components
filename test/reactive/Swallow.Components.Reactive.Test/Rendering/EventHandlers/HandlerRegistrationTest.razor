@@ -1,0 +1,43 @@
+@using Microsoft.AspNetCore.Components.Forms
+@using NUnit.Framework
+@code {
+
+    [Test]
+    public async Task RenderedComponentHasNoEventHandlers_NoDescriptorsDiscovered()
+    {
+        await DiscoverEventHandlersAsync(@<button type="submit">Button</button>);
+        Assert.That(handlerRegistration.Descriptors, Is.Empty);
+    }
+
+    [Test]
+    public async Task EventHandlerOnElement_IsDiscovered()
+    {
+        await DiscoverEventHandlersAsync(@<button type="button" @onclick="@(() => { })">Button</button>);
+        Assert.That(handlerRegistration.FindDescriptor("/button", "click"), Is.Not.Null);
+    }
+
+    [Test]
+    public async Task EventHandlerOnComponent_IsDiscovered()
+    {
+        var binding = "";
+        await DiscoverEventHandlersAsync(@<InputText @bind-Value="@binding" @onblur="@(() => { })" />);
+        Assert.That(handlerRegistration.FindDescriptor("/input", "blur"), Is.Not.Null);
+    }
+
+    [Test]
+    public async Task EventHandlerInParameter_IsDiscovered()
+    {
+        await DiscoverEventHandlersAsync(@<NestedContent>
+                                             <FirstContent>
+                                                 <button type="button" @onclick="@(() => { })">Button</button>
+                                             </FirstContent>
+                                             <SecondContent>
+                                                 <button type="button" @onfocus="@(() => { })">Button</button>
+                                             </SecondContent>
+                                         </NestedContent>);
+
+        Assert.That(handlerRegistration.FindDescriptor("/div[0]/button", "click"), Is.Not.Null);
+        Assert.That(handlerRegistration.FindDescriptor("/div[1]/button", "focus"), Is.Not.Null);
+    }
+
+}

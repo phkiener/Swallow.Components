@@ -12,4 +12,8 @@
     <ProjectReference Include="..\Swallow.Components.Reactive.Abstractions\Swallow.Components.Reactive.Abstractions.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Swallow.Components.Reactive.Test" />
+  </ItemGroup>
+
 </Project>

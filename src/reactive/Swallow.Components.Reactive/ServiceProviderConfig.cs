@@ -24,13 +24,15 @@ public static class ServiceProviderConfig
     /// Register the services needed for reactive rendering in the given service collection.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> in which to register the required services.</param>
-    public static void AddReactiveComponents(this IServiceCollection services)
+    public static IServiceCollection AddReactiveComponents(this IServiceCollection services)
     {
         services.AddScoped<HandlerRegistration>();
         services.AddScoped<ReactiveComponentInvoker>();
         services.AddScoped<ReactiveComponentRenderer>();
         services.AddScoped<ComponentStateStore>();
         services.AddScoped<ReactiveComponentRouteResolver>();
+
+        return services;
     }
 
     /// <summary>
