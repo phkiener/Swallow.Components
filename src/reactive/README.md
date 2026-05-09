@@ -145,8 +145,16 @@ will *never* be done with reactive rendering, but will *always* turn into the
 browser navigating to the requested page.
 
 The current URL may be modified by setting query parameters; hash-routing is not
-supported. Setting a query parameter can be done by TODO: one attribute or a
-combination of existing attributes?
+supported. The current query-string is attached to the request URL, which means
+that every property with `[SupplyParameterFromQuery]` will be filled. When
+persisting the state, all of these properties will be sent to the client as well,
+where they will be used to update the current query string. This way,
+`[SupplyParameterFromQuery]` can be turned into an "additional" `[PersistState]`.
+
+### Form handling
+
+TODO: `[SupplyParameterFromForm]` and a way to *disable* reactive handlers on
+components; `<input @bind="...">` is two-way binding by default.
 
 ### `HeadContent` and `PageTitle`
 
