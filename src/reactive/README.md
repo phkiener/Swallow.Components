@@ -181,6 +181,10 @@ Client-Server interactions are defined by this protocol.
 
 ### Request-Response
 
+Requests *must* be sent as `POST` request. If an endpoint receives a
+request with a different verb, it *must* respond with `400 Bad Request`,
+`404 Not Found` or `405 Method Not Allowed`.
+
 Requests *must* contain the `srx-request` header. If an endpoint receives a
 request without that header, it *must* respond with `400 Bad Request`.
 

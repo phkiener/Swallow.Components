@@ -1,0 +1,202 @@
+using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Endpoints;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Primitives;
+using Swallow.Components.Reactive.Shims;
+
+namespace Swallow.Components.Reactive.Routing;
+
+internal sealed class ReactiveComponentEndpointOptions
+{
+    public string? StaticAssetManifestPath { get; set; }
+}
+
+/// <summary>
+/// A <see cref="EndpointDataSource"/> that collects reactive pages, i.e.
+/// components that have the <see cref="ReactiveComponentAttribute"/>.
+/// </summary>
+public sealed class ReactiveComponentsEndpointDataSource : EndpointDataSource
+{
+    private readonly IServiceProvider serviceProvider;
+    private readonly IEndpointRouteBuilder endpointRouteBuilder;
+    private readonly ReactiveComponentEndpointOptions endpointOptions = new();
+    private readonly Lock lockObject = new();
+    private readonly HashSet<Assembly> includedAssemblies = [];
+    private readonly List<Action<EndpointBuilder>> conventions = [];
+    private readonly List<Action<EndpointBuilder>> finallyConventions = [];
+
+    private List<Endpoint>? endpoints;
+    private CancellationTokenSource changeTokenSource;
+    private IChangeToken changeToken;
+
+    /// <summary>
+    /// The <see cref="IEndpointConventionBuilder"/> for this data source.
+    /// </summary>
+    public ReactiveComponentsEndpointConventionBuilder ConventionBuilder { get; }
+
+    /// <summary>
+    /// Create a new instance of the <see cref="ReactiveComponentsEndpointDataSource"/>.
+    /// </summary>
+    public ReactiveComponentsEndpointDataSource(IServiceProvider serviceProvider, IEndpointRouteBuilder endpointRouteBuilder)
+    {
+        this.serviceProvider = serviceProvider;
+        this.endpointRouteBuilder = endpointRouteBuilder;
+
+        ConventionBuilder = new ReactiveComponentsEndpointConventionBuilder(
+            lockObject: lockObject,
+            endpointOptions: endpointOptions,
+            includedAssemblies: includedAssemblies,
+            conventions: conventions,
+            finallyConventions: finallyConventions);
+
+        GenerateChangeToken();
+    }
+
+    /// <inheritdoc />
+    public override IChangeToken GetChangeToken() => changeToken;
+
+    /// <inheritdoc />
+    public override IReadOnlyList<Endpoint> Endpoints => GetEndpoints();
+
+    private List<Endpoint> GetEndpoints()
+    {
+        if (endpoints is null)
+        {
+            BuildEndpoints();
+            GenerateChangeToken();
+        }
+
+        return endpoints;
+    }
+
+    [MemberNotNull(nameof(endpoints))]
+    private void BuildEndpoints()
+    {
+        var foundEndpoints = new List<Endpoint>();
+        lock (lockObject)
+        {
+            var types = includedAssemblies.SelectMany(static a => a.GetExportedTypes())
+                .Where(static a => a.GetCustomAttributes<ReactiveComponentAttribute>(inherit: true).Any())
+                .ToList();
+
+            foreach (var type in types)
+            {
+                var builder = BuildEndpoint(type);
+                foreach (var convention in conventions)
+                {
+                    convention(builder);
+                }
+
+                foreach (var finalConvention in finallyConventions)
+                {
+                    finalConvention(builder);
+                }
+
+                foundEndpoints.Add(builder.Build());
+            }
+        }
+
+        endpoints = foundEndpoints;
+    }
+
+    private RouteEndpointBuilder BuildEndpoint(Type targetType)
+    {
+        var routeTemplate = $"_reactive/{targetType.Assembly.GetName().Name}/{targetType.FullName}";
+
+        var endpointBuilder = new RouteEndpointBuilder(
+            requestDelegate: null,
+            routePattern: RoutePatternFactory.Parse(routeTemplate),
+            order: 0);
+
+        var result = RequestDelegateFactory.Create(
+            RenderReactiveComponent,
+            new RequestDelegateFactoryOptions
+            {
+                EndpointBuilder = endpointBuilder,
+                ServiceProvider = serviceProvider,
+                DisableInferBodyFromParameters = true
+            });
+
+        endpointBuilder.RequestDelegate = result.RequestDelegate;
+        endpointBuilder.DisplayName = $"{endpointBuilder.RoutePattern.RawText} ({targetType.Name})";
+
+        endpointBuilder.CopyAttributeMetadata(targetType, static a => a is not RouteAttribute);
+        endpointBuilder.ApplyResourceCollectionMetadata(endpointRouteBuilder, endpointOptions.StaticAssetManifestPath);
+
+        endpointBuilder.Metadata.Add(new SuppressLinkGenerationMetadata());
+        endpointBuilder.Metadata.Add(new RequireAntiforgeryTokenAttribute());
+        endpointBuilder.Metadata.Add(new HttpMethodMetadata([HttpMethods.Post]));
+        endpointBuilder.Metadata.Add(new ComponentTypeMetadata(targetType));
+
+        return endpointBuilder;
+    }
+
+    [MemberNotNull(nameof(changeTokenSource))]
+    [MemberNotNull(nameof(changeToken))]
+    private void GenerateChangeToken()
+    {
+        var previousChangeTokenSource = changeTokenSource;
+        changeTokenSource = new CancellationTokenSource();
+        changeToken = new CancellationChangeToken(changeTokenSource.Token);
+
+        previousChangeTokenSource?.Cancel();
+        previousChangeTokenSource?.Dispose();
+    }
+
+    private static Task RenderReactiveComponent(HttpContext httpContext)
+    {
+        var componentType = httpContext.GetEndpoint()?.Metadata.GetMetadata<ComponentTypeMetadata>()?.Type;
+        if (componentType is null)
+        {
+            var notFoundResult = TypedResults.NotFound();
+            return notFoundResult.ExecuteAsync(httpContext);
+        }
+
+        var invoker = httpContext.RequestServices.GetRequiredService<ReactiveComponentInvoker>();
+        return invoker.InvokeAsync(componentType, httpContext);
+    }
+
+}
+
+file static class EndpointBuilderExtensions
+{
+    extension(EndpointBuilder endpointBuilder)
+    {
+        public void CopyAttributeMetadata(Type sourceType, Func<Attribute, bool> includeAttribute)
+        {
+            foreach (var attribute in sourceType.GetCustomAttributes<Attribute>(inherit: true))
+            {
+                if (attribute is not RequiredMemberAttribute && includeAttribute(attribute))
+                {
+                    endpointBuilder.Metadata.Add(attribute);
+                }
+            }
+        }
+
+        public void ApplyResourceCollectionMetadata(IEndpointRouteBuilder endpoints, string? manifestPath)
+        {
+            var resolver = ResourceCollectionResolver.TryCreate(endpoints);
+            if (resolver is null)
+            {
+                return;
+            }
+
+            if (resolver.IsRegistered(manifestPath))
+            {
+                var collection = resolver.ResolveResourceCollection(manifestPath);
+                var importMap = ImportMapDefinition.FromResourceCollection(collection);
+
+                endpointBuilder.Metadata.Add(collection);
+                endpointBuilder.Metadata.Add(importMap);
+            }
+        }
+    }
+}
