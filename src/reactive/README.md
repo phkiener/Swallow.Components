@@ -174,3 +174,41 @@ Antiforgery is supported. When configured for the endpoint(s), an antiforgery
 token will be rendered for the fragment and sent alongside every rendering request.
 
 If antiforgery is not configured, no token will be set.
+
+## Protocol
+
+Client-Server interactions are defined by this protocol.
+
+### Request-Response
+
+Requests *must* contain the `srx-request` header. If an endpoint receives a
+request without that header, it *must* respond with `400 Bad Request`.
+
+Responses *must* contain the `srx-response` header. If a client receives a
+response without that header, it *must* discard the response.
+
+A valid response may have one of the following status codes:
+
+- `200 OK`
+
+A response containing any other status code *should* be discarded.
+
+A `200 OK` response indicates a successful render. This response *must* have
+a `multipart/mixed` content type consisting of the following blocks:
+
+- `text/html` for the rendered markup, one or more
+- `application/x-www-form-urlencoded` with an `srx-kind: state` for persisted state
+- `application/x-www-form-urlencoded` with an `srx-kind: query` header for persisted query parameters
+- `application/x-www-form-urlencoded` with an `srx-kind: trigger` header for trigger definitions
+- `application/x-www-form-urlencoded` with an `srx-kind: antiforgery` header for antiforgery data
+- `text/plain` with an `srx-redirect` header present for redirects
+
+When a redirect is encountered, it *must* be executed immediately and the rest
+of the response *must* be discarded. The connection *should* immediately be closed
+and the redirect executed.
+
+For all other blocks, they may be encountered one or more times, in which case
+a later block *must* replace all content included by a previous block.
+
+The blocks *may* be streamed to the client, i.e. arrive not at the same time. A
+client *should* wait for the server to close the connection.
