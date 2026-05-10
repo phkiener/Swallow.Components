@@ -15,19 +15,27 @@ internal sealed class ReactiveComponentStore(IDataProtectionProvider dataProtect
     {
         foreach (var key in form.Keys)
         {
+            if (!key.StartsWith(Constants.StatePrefix))
+            {
+                continue;
+            }
+
             var value = form[key].LastOrDefault();
             if (value is null)
             {
                 continue;
             }
 
-            currentState[key] = Deserialize(value);
+            var stateKey = key[Constants.StatePrefix.Length..];
+            currentState[stateKey] = Deserialize(value);
         }
     }
 
     public Dictionary<string, string> Serialize()
     {
-        return currentState.ToDictionary(static kvp => kvp.Key, kvp => Serialize(kvp.Value));
+        return currentState.ToDictionary(
+            static kvp => Constants.StatePrefix + kvp.Key,
+            kvp => Serialize(kvp.Value));
     }
 
     Task<IDictionary<string, byte[]>> IPersistentComponentStateStore.GetPersistedStateAsync()

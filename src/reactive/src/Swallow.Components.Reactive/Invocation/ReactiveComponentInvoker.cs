@@ -25,20 +25,20 @@ internal sealed class ReactiveComponentInvoker(
         await renderer.InitializeComponentServicesAsync(context, store);
 
         context.Response.StatusCode = StatusCodes.Status200OK;
-        context.Response.Headers.Append(ReactiveHeaders.ResponseMarker, "true");
+        context.Response.Headers.Append(Headers.ResponseMarker, "true");
         await using var writer = new MultipartResponseWriter(context.Response);
 
         // Exceptions while invoking should be propagated to the default exception handler.
         // Except Navigation. That one is expected since it's thrown by the NavigationManager.
         try
         {
-            var useStreaming = context.Request.Headers.ContainsKey(ReactiveHeaders.StreamingRequestMarker);
+            var useStreaming = context.Request.Headers.ContainsKey(Headers.StreamingRequestMarker);
             await InvokeCoreAsync(componentType, store, writer, useStreaming);
         }
         catch (NavigationException navigation)
         {
             var content = MultipartContent.Create(MediaTypeNames.Text.Plain, navigation.Location);
-            content.Headers.Append(ReactiveHeaders.RedirectMarker, "true");
+            content.Headers.Append(Headers.RedirectMarker, "true");
 
             await writer.WriteAsync(content);
         }
@@ -81,7 +81,7 @@ internal sealed class ReactiveComponentInvoker(
             return false;
         }
 
-        if (request.Headers.ContainsKey(ReactiveHeaders.RequestMarker))
+        if (request.Headers.ContainsKey(Headers.RequestMarker))
         {
             return false;
         }
@@ -105,7 +105,7 @@ internal sealed class ReactiveComponentInvoker(
         var content = string.Join('&', serializedState.Select(static kvp => $"{kvp.Key}={kvp.Value}"));
 
         var statePart = MultipartContent.Create(MediaTypeNames.Application.FormUrlEncoded, content);
-        statePart.Headers.Append(ReactiveHeaders.ResponsePartIdentifier, ReactiveHeaders.ResponsePartState);
+        statePart.Headers.Append(Headers.ResponsePartIdentifier, Headers.ResponsePartState);
 
         return statePart;
     }

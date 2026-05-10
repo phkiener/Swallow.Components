@@ -1,6 +1,6 @@
 namespace Swallow.Components.Reactive;
 
-internal static class ReactiveHeaders
+internal static class Headers
 {
     public const string RequestMarker = "srx-request";
     public const string StreamingRequestMarker = "srx-streaming";
