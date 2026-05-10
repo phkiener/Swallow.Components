@@ -27,7 +27,7 @@ internal sealed class ReactiveComponentStore(IDataProtectionProvider dataProtect
             }
 
             var stateKey = key[Constants.StatePrefix.Length..];
-            currentState[stateKey] = Deserialize(value);
+            currentState[stateKey] = Deserialize(Uri.UnescapeDataString(value));
         }
     }
 

@@ -27,11 +27,7 @@ internal sealed partial class ReactiveComponentRenderer(IServiceProvider service
         var layoutParameters = new Dictionary<string, object?>
         {
             [nameof(LayoutView.Layout)] = typeof(ReactiveFragmentContainer),
-            [nameof(LayoutView.ChildContent)] = (RenderTreeBuilder builder) =>
-            {
-                builder.OpenComponent(0, reactiveComponentType);
-                builder.CloseComponent();
-            }
+            [nameof(LayoutView.ChildContent)] = RenderComponent(componentType, new Dictionary<string, object?>())
         };
 
         return Dispatcher.InvokeAsync(() =>
@@ -39,6 +35,19 @@ internal sealed partial class ReactiveComponentRenderer(IServiceProvider service
             var rootComponent = BeginRenderingComponent(typeof(LayoutView), ParameterView.FromDictionary(layoutParameters));
             return rootComponent.QuiescenceTask;
         });
+
+        static RenderFragment RenderComponent(Type componentType, IReadOnlyDictionary<string, object?> componentParameters)
+        {
+            return builder =>
+            {
+                builder.OpenComponent(0, componentType);
+                foreach (var parameter in componentParameters)
+                {
+                    builder.AddComponentParameter(1, parameter.Key, parameter.Value);
+                }
+                builder.CloseComponent();
+            };
+        }
     }
 
     public Task WaitForSettled()

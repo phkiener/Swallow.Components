@@ -1,0 +1,13 @@
+<span>Hello World</span>
+
+@code {
+
+    [PersistentState]
+    public bool StatePersisted { get; set; }
+
+    protected override void OnInitialized()
+    {
+        StatePersisted = true;
+    }
+
+}

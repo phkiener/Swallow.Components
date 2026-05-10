@@ -21,6 +21,8 @@ internal sealed partial class ReactiveComponentRenderer
     protected override RendererInfo RendererInfo => new("static-interactive", true);
     protected override ResourceAssetCollection Assets => resourceCollection ?? base.Assets;
 
+    protected override IComponentRenderMode GetComponentRenderMode(IComponent component) => RenderMode.StaticReactive;
+
     public async Task InitializeComponentServicesAsync(HttpContext context, IPersistentComponentStateStore store)
     {
         httpContext = context;

@@ -1,5 +1,6 @@
 using System.Net.Mime;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Swallow.Components.Reactive.State;
@@ -8,6 +9,7 @@ namespace Swallow.Components.Reactive.Invocation;
 
 internal sealed class ReactiveComponentInvoker(
     ReactiveComponentRenderer renderer,
+    ComponentStatePersistenceManager statePersistenceManager,
     IDataProtectionProvider dataProtectionProvider)
 {
     public async Task InvokeAsync(Type componentType, HttpContext context)
@@ -65,12 +67,12 @@ internal sealed class ReactiveComponentInvoker(
 
     private async Task UpdateDisplayAsync(MultipartResponseWriter writer, ReactiveComponentStore store)
     {
-        var markupPart = await CreateMarkupPartAsync(renderer);
+        var markupPart = await CreateMarkupPartAsync();
         await writer.WriteAsync(markupPart);
 
         // TODO: Discover & write event handlers
 
-        var statePart = CreateStatePart(store);
+        var statePart = await CreateStatePartAsync(store);
         await writer.WriteAsync(statePart);
     }
 
@@ -81,7 +83,12 @@ internal sealed class ReactiveComponentInvoker(
             return false;
         }
 
-        if (request.Headers.ContainsKey(Headers.RequestMarker))
+        if (!request.HasFormContentType)
+        {
+            return false;
+        }
+
+        if (!request.Headers.ContainsKey(Headers.RequestMarker))
         {
             return false;
         }
@@ -91,18 +98,15 @@ internal sealed class ReactiveComponentInvoker(
             return false;
         }
 
-        if (!request.HasFormContentType)
-        {
-            return false;
-        }
-
         return true;
     }
 
-    private static MultipartContent CreateStatePart(ReactiveComponentStore store)
+    private async Task<MultipartContent> CreateStatePartAsync(ReactiveComponentStore store)
     {
+        await statePersistenceManager.PersistStateAsync(store, renderer);
+
         var serializedState = store.Serialize();
-        var content = string.Join('&', serializedState.Select(static kvp => $"{kvp.Key}={kvp.Value}"));
+        var content = string.Join('&', serializedState.Select(static kvp => $"{Uri.EscapeDataString(kvp.Key)}={Uri.EscapeDataString(kvp.Value)}"));
 
         var statePart = MultipartContent.Create(MediaTypeNames.Application.FormUrlEncoded, content);
         statePart.Headers.Append(Headers.ResponsePartIdentifier, Headers.ResponsePartState);
@@ -110,7 +114,7 @@ internal sealed class ReactiveComponentInvoker(
         return statePart;
     }
 
-    private static async Task<MultipartContent> CreateMarkupPartAsync(ReactiveComponentRenderer renderer)
+    private async Task<MultipartContent> CreateMarkupPartAsync()
     {
         var markup = await renderer.RenderMarkupAsync();
         return MultipartContent.Create(MediaTypeNames.Text.Html, markup);

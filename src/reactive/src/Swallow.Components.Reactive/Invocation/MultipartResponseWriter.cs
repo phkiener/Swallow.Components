@@ -55,6 +55,7 @@ internal sealed class MultipartResponseWriter : IDisposable, IAsyncDisposable
 
         await writer.WriteAsync("\r\n");
         await writer.WriteAsync(part.Content);
+        await writer.WriteAsync("\r\n");
     }
 
     public void Dispose()
