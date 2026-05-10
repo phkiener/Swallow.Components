@@ -52,16 +52,15 @@ Prerendering can be disabled for a fragment, but not globally.
 
 ### Keeping state
 
-Every component property that is marked with `[PersistState]` will be kept in the
-DOM and set for rehydration. Additionally, state may also be handled by injecting
+Every component property that is marked with `[PersistentState]` will be kept in
+the DOM and set for rehydration. Additionally, state may also be handled by injecting
 `PersistentComponentState` to your component. Finally, you can also register
 state for (scoped) services; these have to be explicitly configured for the
 `IServiceCollection` using `RegisterPersistentService<TService>`, passing in
 the reactive render mode.
 
 By default, the state is JSON-serialized and compressed using Brotli, before
-being protected using the `IDataProtector` and base64-encoded. A default serializer
-can be registered *globally*, not per-fragment.
+being protected using the `IDataProtector` and base64-encoded.
 
 ### Component lifecycle
 
@@ -149,7 +148,7 @@ supported. The current query-string is attached to the request URL, which means
 that every property with `[SupplyParameterFromQuery]` will be filled. When
 persisting the state, all of these properties will be sent to the client as well,
 where they will be used to update the current query string. This way,
-`[SupplyParameterFromQuery]` can be turned into an "additional" `[PersistState]`.
+`[SupplyParameterFromQuery]` can be turned into an "additional" `[PersistentState]`.
 
 ### Form handling
 

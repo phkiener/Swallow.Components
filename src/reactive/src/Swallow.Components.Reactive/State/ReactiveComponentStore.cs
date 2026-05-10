@@ -1,10 +1,14 @@
+using System.IO.Compression;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 
 namespace Swallow.Components.Reactive.State;
 
-internal sealed class ReactiveComponentStore : IPersistentComponentStateStore
+internal sealed class ReactiveComponentStore(IDataProtectionProvider dataProtectionProvider) : IPersistentComponentStateStore
 {
+    private const string Purpose = "ReactiveComponent-State";
+
     private Dictionary<string, byte[]> currentState = new();
 
     public void Initialize(IFormCollection form)
@@ -17,13 +21,13 @@ internal sealed class ReactiveComponentStore : IPersistentComponentStateStore
                 continue;
             }
 
-            currentState[key] = Convert.FromBase64String(value);
+            currentState[key] = Deserialize(value);
         }
     }
 
     public Dictionary<string, string> Serialize()
     {
-        return currentState.ToDictionary(static kvp => kvp.Key, static kvp => Convert.ToBase64String(kvp.Value));
+        return currentState.ToDictionary(static kvp => kvp.Key, kvp => Serialize(kvp.Value));
     }
 
     Task<IDictionary<string, byte[]>> IPersistentComponentStateStore.GetPersistedStateAsync()
@@ -36,5 +40,34 @@ internal sealed class ReactiveComponentStore : IPersistentComponentStateStore
         currentState = new Dictionary<string, byte[]>(state);
 
         return Task.CompletedTask;
+    }
+
+    private byte[] Deserialize(string formContent)
+    {
+        var protectedBytes = Convert.FromBase64String(formContent);
+        var protector = dataProtectionProvider.CreateProtector(Purpose);
+        var decodedBytes = protector.Unprotect(protectedBytes);
+
+        using var memoryStream = new MemoryStream(decodedBytes);
+        using var decompressingStream = new BrotliStream(memoryStream, CompressionMode.Decompress);
+        using var outputStream = new MemoryStream();
+
+        decompressingStream.CopyTo(outputStream);
+        decompressingStream.Flush();
+
+        return outputStream.ToArray();
+    }
+
+    private string Serialize(byte[] state)
+    {
+        using var memoryStream = new MemoryStream();
+        using var compressingStream = new BrotliStream(memoryStream, CompressionMode.Compress);
+        compressingStream.Write(state);
+        compressingStream.Flush();
+
+        var protector = dataProtectionProvider.CreateProtector(Purpose);
+        var protectedData = protector.Protect(memoryStream.ToArray());
+
+        return Convert.ToBase64String(protectedData);
     }
 }

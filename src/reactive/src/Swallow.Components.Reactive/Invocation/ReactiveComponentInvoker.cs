@@ -1,11 +1,14 @@
 using System.Net.Mime;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Swallow.Components.Reactive.State;
 
 namespace Swallow.Components.Reactive.Invocation;
 
-internal sealed class ReactiveComponentInvoker(ReactiveComponentRenderer renderer)
+internal sealed class ReactiveComponentInvoker(
+    ReactiveComponentRenderer renderer,
+    IDataProtectionProvider dataProtectionProvider)
 {
     public async Task InvokeAsync(Type componentType, HttpContext context)
     {
@@ -17,7 +20,7 @@ internal sealed class ReactiveComponentInvoker(ReactiveComponentRenderer rendere
 
         var form = await context.Request.ReadFormAsync();
 
-        var store = new ReactiveComponentStore();
+        var store = new ReactiveComponentStore(dataProtectionProvider);
         store.Initialize(form);
 
         await renderer.InitializeComponentServicesAsync(context, store);
