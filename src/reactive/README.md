@@ -195,6 +195,9 @@ Requests *must* contain the `Referer` header to indicate which statically render
 page embeds the reactive fragment. If an endpoint receives a request without
 that header, it *must* respond with `400 Bad Request`.
 
+Requests *can* have the `srx-streaming` header. If this header is present, the
+endpoint *should* provide the response incrementally.
+
 Responses *must* contain the `srx-response` header. If a client receives a
 response without that header, it *must* discard the response.
 

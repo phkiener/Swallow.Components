@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure;
 using Microsoft.AspNetCore.Components.Infrastructure;
+using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Http;
@@ -13,15 +14,24 @@ namespace Swallow.Components.Reactive.Invocation;
 
 internal sealed class ReactiveComponentRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory) : StaticHtmlRenderer(serviceProvider, loggerFactory)
 {
+    private static readonly Task CanceledRenderTask = Task.FromCanceled(new CancellationToken(canceled: true));
+    private static readonly Func<Task> EmptyCallback = static () => Task.CompletedTask;
+
     private readonly IServiceProvider serviceProvider = serviceProvider;
     private readonly MemoizingDispatcher dispatcher = new(Dispatcher.CreateDefault());
 
     private HttpContext? httpContext;
     private ResourceAssetCollection? resourceCollection;
+    private Func<Task> onUpdateDisplay = EmptyCallback;
 
     public override Dispatcher Dispatcher => dispatcher;
     protected override RendererInfo RendererInfo => new("static-interactive", true);
     protected override ResourceAssetCollection Assets => resourceCollection ?? base.Assets;
+
+    protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
+    {
+        return onUpdateDisplay().ContinueWith(static _ => CanceledRenderTask);
+    }
 
     public async Task InitializeComponentServicesAsync(HttpContext context, IPersistentComponentStateStore store)
     {
@@ -63,6 +73,16 @@ internal sealed class ReactiveComponentRenderer(IServiceProvider serviceProvider
             stateManager.SetPlatformRenderMode(RenderMode.StaticReactive);
             await stateManager.RestoreStateAsync(store, RestoreContext.LastSnapshot);
         }
+    }
+
+    public void RegisterUpdateDisplayCallback(Func<Task> callback)
+    {
+        onUpdateDisplay = callback;
+    }
+
+    public void ClearUpdateDisplayCallback()
+    {
+        onUpdateDisplay = EmptyCallback;
     }
 
     public Task RehydrateComponent(Type componentType)

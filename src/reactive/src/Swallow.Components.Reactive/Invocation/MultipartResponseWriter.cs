@@ -5,15 +5,17 @@ using Microsoft.AspNetCore.WebUtilities;
 
 namespace Swallow.Components.Reactive.Invocation;
 
-internal sealed class MultipartContent(string contentType, IHeaderDictionary headers, string content)
+internal sealed class MultipartContent(IHeaderDictionary headers, string content)
 {
-    public string ContentType { get; } = contentType;
     public IHeaderDictionary Headers { get; } = headers;
     public string Content { get; } = content;
 
     public static MultipartContent Create(string contentType, string content)
     {
-        return new MultipartContent(contentType, new HeaderDictionary(), content);
+        var headerDictionary = new HeaderDictionary();
+        headerDictionary.Append("Content-Type", contentType);
+
+        return new MultipartContent(headerDictionary, content);
     }
 }
 
@@ -21,6 +23,7 @@ internal sealed class MultipartResponseWriter : IDisposable, IAsyncDisposable
 {
     private readonly string boundary = Guid.NewGuid().ToString("N");
     private readonly TextWriter writer;
+    private bool isClosed = false;
 
     public MultipartResponseWriter(HttpResponse response)
     {
@@ -36,9 +39,12 @@ internal sealed class MultipartResponseWriter : IDisposable, IAsyncDisposable
 
     public async Task WriteAsync(MultipartContent part)
     {
-        await writer.WriteAsync($"--{boundary}\r\n");
-        await writer.WriteAsync($"Content-Type: {part.ContentType}\r\n");
+        if (isClosed)
+        {
+            throw new InvalidOperationException("The multipart response is already closed.");
+        }
 
+        await writer.WriteAsync($"--{boundary}\r\n");
         foreach (var header in part.Headers)
         {
             foreach (var value in header.Value)
@@ -51,18 +57,29 @@ internal sealed class MultipartResponseWriter : IDisposable, IAsyncDisposable
         await writer.WriteAsync(part.Content);
     }
 
-    public async Task FinishAsync()
-    {
-        await writer.WriteAsync($"\r\n--{boundary}--\r\n");
-    }
-
     public void Dispose()
     {
+        if (isClosed)
+        {
+            return;
+        }
+
+        writer.Write($"\r\n--{boundary}--\r\n");
         writer.Dispose();
+
+        isClosed = true;
     }
 
     public async ValueTask DisposeAsync()
     {
+        if (isClosed)
+        {
+            return;
+        }
+
+        await writer.WriteAsync($"\r\n--{boundary}--\r\n");
         await writer.DisposeAsync();
+
+        isClosed = true;
     }
 }
