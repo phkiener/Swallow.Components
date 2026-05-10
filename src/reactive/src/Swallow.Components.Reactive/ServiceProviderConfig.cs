@@ -1,6 +1,7 @@
 using System.Reflection;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Swallow.Components.Reactive.Invocation;
 using Swallow.Components.Reactive.Routing;
 
 namespace Swallow.Components.Reactive;
@@ -20,6 +21,7 @@ public static class ServiceProviderConfig
     {
         services.AddSingleton<ReactiveComponentsRegisteredMarker>();
         services.AddTransient<ReactiveComponentInvoker>();
+        services.AddTransient<ReactiveComponentRenderer>();
 
         return services;
     }

@@ -185,8 +185,16 @@ Requests *must* be sent as `POST` request. If an endpoint receives a
 request with a different verb, it *must* respond with `400 Bad Request`,
 `404 Not Found` or `405 Method Not Allowed`.
 
+Requests *must* have either `multipart/form-data` or `application/x-www-form-urlencoded`
+as content type. If an endpoint receives a request with a different content type,
+it *must* respond with `400 Bad Request` or `415 Unsupported Media Type`.
+
 Requests *must* contain the `srx-request` header. If an endpoint receives a
 request without that header, it *must* respond with `400 Bad Request`.
+
+Requests *must* contain the `Referer` header to indicate which statically rendered
+page embeds the reactive fragment. If an endpoint receives a request without
+that header, it *must* respond with `400 Bad Request`.
 
 Responses *must* contain the `srx-response` header. If a client receives a
 response without that header, it *must* discard the response.
