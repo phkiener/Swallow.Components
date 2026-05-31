@@ -1,0 +1,14 @@
+header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+
+    h2 {
+        margin: 0;
+        padding: 0;
+
+        font-size: 20px;
+        font-weight: bold;
+    }
+}
