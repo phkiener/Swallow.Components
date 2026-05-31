@@ -1,4 +1,4 @@
-namespace Swallow.Components.Internal;
+namespace Swallow.Components;
 
 internal static class AttributeHelper
 {
