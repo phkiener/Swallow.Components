@@ -36,17 +36,7 @@ public static class NavigationProvider
 
     private static IEnumerable<NavigationItem> EnumerateItems()
     {
-        yield return new NavigationItem.Header("Overview");
-        yield return new NavigationItem.Link("Home", "/");
-        yield return new NavigationItem.Header("Buttons");
-        yield return new NavigationItem.Link("Button", Routes.Pages.Buttons.ButtonPage);
-        yield return new NavigationItem.Link("Link Button", Routes.Pages.Buttons.LinkButtonPage);
-        yield return new NavigationItem.Link("Icon Button", Routes.Pages.Buttons.IconButtonPage);
-        yield return new NavigationItem.Header("Layout");
-        yield return new NavigationItem.Link("Tabs", Routes.Pages.Layout.TabsPage);
-        yield return new NavigationItem.Header("Overlay");
-        yield return new NavigationItem.Link("Tooltip", Routes.Pages.Overlays.TooltipPage);
-        yield return new NavigationItem.Link("Popover", Routes.Pages.Overlays.PopoverPage);
+        yield break;
     }
 
     private static IEnumerable<NavigationSection> EnumerateSections()
