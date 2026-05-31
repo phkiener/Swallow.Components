@@ -1,10 +1,9 @@
 @page "/reactive/multiple"
 
-@using Swallow.Components.Buttons
-@using Swallow.Components.Forms
+@using Microsoft.AspNetCore.Components.Forms
 
-<SwInputText @bind-Value="Text" />
-<SwButton OnClick="@OnClick">Display</SwButton>
+<InputText @bind-Value="Text" />
+<button @onclick="@OnClick">Display</button>
 
 @if (showMessage)
 {
