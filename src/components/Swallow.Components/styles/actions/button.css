@@ -40,3 +40,19 @@ button.sw, .sw-button {
         cursor: not-allowed;
     }
 }
+
+.sw-button-group {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: var(--size-full);
+
+    & > :is(button.sw, .sw-button) {
+        margin: var(--size-half) 0;
+    }
+
+    &.joined {
+        gap: 0;
+    }
+}
