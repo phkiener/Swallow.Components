@@ -1,0 +1,33 @@
+<div class="sw-tabs">
+    <div class="tab-list" role="tablist">
+        @foreach (var tab in tabManager.Tabs)
+        {
+            <button type="button"
+                    class="sw text"
+                    id="@tab.Id-handle"
+                    role="tab"
+                    tabindex="@(tab.Selected ? "0" : "-1")"
+                    aria-selected="@tab.Selected"
+                    aria-controls="@tab.Id-panel">
+                @tab.Title
+            </button>
+        }
+    </div>
+
+    <div class="tab-panels">
+        @foreach (var tab in tabManager.Tabs)
+        {
+            <div id="@tab.Id-panel"
+                 role="tabpanel"
+                 tabindex="0"
+                 hidden="@(!tab.Selected)"
+                 aria-labelledby="@tab.Id-handle">
+                @tab.Content
+            </div>
+        }
+    </div>
+
+    <CascadingValue Value="tabManager" IsFixed>
+        @ChildContent
+    </CascadingValue>
+</div>

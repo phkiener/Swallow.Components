@@ -2,7 +2,8 @@
   "type": "module",
   "private": true,
   "devDependencies": {
-    "lightningcss": "^1.32.0"
+    "lightningcss": "^1.32.0",
+    "tsdown": "^0.22.1"
   },
   "scripts": {
     "build": "node build.js"

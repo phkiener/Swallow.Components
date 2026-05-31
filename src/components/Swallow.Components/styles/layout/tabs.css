@@ -1,0 +1,28 @@
+.sw-tabs {
+    .tab-list {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-start;
+
+        > button {
+            margin-inline: 0;
+            margin-block: 0;
+            margin-bottom: calc(-1 * var(--size-thin));
+
+            border: var(--size-thin) inset transparent;
+
+            &[aria-selected="true"] {
+                border-left-color: var(--color-gray-dark);
+                border-right-color: var(--color-gray-dark);
+                border-top-color: var(--color-gray-dark);
+                border-bottom-color: var(--color-background);
+            }
+        }
+    }
+
+    .tab-panels {
+        border: var(--size-thin) solid var(--color-gray-dark);
+        padding: var(--size-half);
+    }
+}

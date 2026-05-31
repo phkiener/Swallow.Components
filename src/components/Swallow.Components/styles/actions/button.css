@@ -58,7 +58,7 @@ button.sw, .sw-button {
         }
     }
 
-    &:hover, &:active, &:focus {
+    &:hover {
         opacity: 0.8;
     }
 

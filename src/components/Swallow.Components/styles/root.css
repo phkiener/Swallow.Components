@@ -2,3 +2,4 @@
 
 @import "theme.css" layer(base);
 @import "actions/button.css" layer(components);
+@import "layout/tabs.css" layer(components);
