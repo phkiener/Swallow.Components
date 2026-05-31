@@ -43,16 +43,24 @@
 
     padding: 16px 8px;
 
-    a {
-        text-decoration: none;
+    nav {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: flex-start;
+        gap: 8px;
 
-        &.active::before {
-            content: ">";
-            margin-right: 1ch;
-        }
+        a {
+            text-decoration: none;
 
-        &:hover {
-            text-decoration: underline;
+            &.active::before {
+                content: ">";
+                margin-right: 1ch;
+            }
+
+            &:hover {
+                text-decoration: underline;
+            }
         }
     }
 }
@@ -63,8 +71,11 @@
 
     padding: 16px;
 
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: flex-start;
+    & > article {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: flex-start;
+        gap: 1lh;
+    }
 }
