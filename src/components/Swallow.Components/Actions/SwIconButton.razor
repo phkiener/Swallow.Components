@@ -1,0 +1,7 @@
+<button type="@buttonType"
+        disabled="@Disabled"
+        @onclick="OnClick"
+        @attributes="AdditionalAttributes"
+        class="@AttributeHelper.Class(AdditionalAttributes, "sw", "icon-only", Inline ? "inline" : null)">
+    @ChildContent
+</button>

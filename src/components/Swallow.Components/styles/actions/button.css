@@ -1,7 +1,11 @@
 button.sw, .sw-button {
     box-sizing: border-box;
-    display: inline;
     max-width: 100%;
+
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
 
     margin-inline: var(--size-half);
     margin-block: var(--size-half);
@@ -34,6 +38,24 @@ button.sw, .sw-button {
     &.text {
         color: var(--color-foreground);
         background-color: transparent;
+    }
+
+    &.icon-only {
+        padding-inline: 0;
+        padding-block: 0;
+
+        height: 1.25rem;
+        width: 1.25rem;
+
+        color: var(--color-foreground);
+        background-color: transparent;
+
+        &.inline {
+            margin-inline: .25ch;
+            margin-block: 0;
+
+            vertical-align: center;
+        }
     }
 
     &:hover, &:active, &:focus {

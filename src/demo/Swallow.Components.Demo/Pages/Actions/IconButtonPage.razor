@@ -1,0 +1,12 @@
+@page "/actions/icon-button"
+@using Swallow.Components.Actions
+@using Swallow.Components.Icons
+
+<PageHeader Title="Icon Button" />
+
+<SwIconButton><SwIcon Icon="IconType.Award" /></SwIconButton>
+<SwIconButton Disabled><SwIcon Icon="IconType.Award" /></SwIconButton>
+
+<p>
+    Since it's inline we can <SwIconButton Inline><SwIcon Icon="IconType.HandGrab" /></SwIconButton> this.
+</p>
