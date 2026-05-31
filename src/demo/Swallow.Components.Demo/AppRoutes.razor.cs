@@ -1,8 +1,9 @@
 using System.Reflection;
 using Microsoft.AspNetCore.Components;
 using Swallow.Components.Demo.Layout;
+using Swallow.Components.Demo.Pages;
 
-namespace Swallow.Components.Demo.Hosting;
+namespace Swallow.Components.Demo;
 
 public abstract partial class AppRoutes : ComponentBase
 {

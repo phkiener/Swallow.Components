@@ -1,6 +1,6 @@
 using System.Reflection;
 using Microsoft.AspNetCore.Components;
-using Swallow.Components.Demo.Hosting;
+using Swallow.Components.Demo;
 using Swallow.Components.Reactive;
 
 namespace DemoHost.Reactive;

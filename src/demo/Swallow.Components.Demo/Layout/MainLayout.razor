@@ -1,18 +1,20 @@
+@using Microsoft.AspNetCore.Components.Routing
 @using Microsoft.AspNetCore.Components.Web
-@using Swallow.Components.Demo.Layout.Navigation
 @inherits LayoutComponentBase
 
 <HeadContent>
     <SwallowComponentsSetup />
 </HeadContent>
 
-<div id="app" theme="@theme">
+<div id="app">
     <header>
-        <PageHeader />
+        <h1>Swallow Components</h1>
     </header>
 
     <aside>
-        <NavigationSidebar />
+        <nav>
+            <NavLink href="/">Home</NavLink>
+        </nav>
     </aside>
 
     <main>

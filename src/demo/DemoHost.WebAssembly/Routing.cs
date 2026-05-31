@@ -1,5 +1,5 @@
 using System.Reflection;
-using Swallow.Components.Demo.Hosting;
+using Swallow.Components.Demo;
 
 namespace DemoHost.WebAssembly;
 
