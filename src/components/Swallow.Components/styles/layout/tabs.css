@@ -24,5 +24,9 @@
     .tab-panels {
         border: var(--size-thin) solid var(--color-gray-dark);
         padding: var(--size-half);
+
+        &:not(:has(> :not([hidden]))) {
+            display: none;
+        }
     }
 }

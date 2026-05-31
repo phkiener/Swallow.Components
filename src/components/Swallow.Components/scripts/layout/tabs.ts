@@ -10,6 +10,7 @@ export default function registerTabs(element: HTMLElement) {
 function registerTab(element: HTMLDivElement) {
     const tabList = element.querySelector<HTMLDivElement>(":scope > .tab-list:not([data-registered])");
     tabList?.addEventListener("keydown", handleTabListInput);
+    tabList?.setAttribute("data-registered", "true");
 
     const { Tabs: tabs } = inspect(element);
     for (const tab of tabs) {
@@ -19,9 +20,8 @@ function registerTab(element: HTMLDivElement) {
 
         tab.addEventListener("click", handleTabClick);
         tab.addEventListener("keydown", handleTabInput);
+        tab.setAttribute("data-registered", "true");
     }
-
-    element.dataset.registered = "true";
 }
 
 function handleTabClick(event: MouseEvent) {
