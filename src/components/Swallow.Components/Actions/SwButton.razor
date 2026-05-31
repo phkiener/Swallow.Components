@@ -1,0 +1,9 @@
+@using Swallow.Components.Internal
+
+<button type="@buttonType"
+        disabled="@Disabled"
+        @onclick="OnClick"
+        @attributes="AdditionalAttributes"
+        class="@AttributeHelper.Class(AdditionalAttributes, "sw", variantClass)">
+    @ChildContent
+</button>

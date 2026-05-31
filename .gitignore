@@ -12,3 +12,6 @@
 *.user
 *.DS_STORE
 *.*~
+
+# Artifacts
+node_modules/

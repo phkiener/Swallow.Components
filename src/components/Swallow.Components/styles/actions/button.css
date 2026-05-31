@@ -1,0 +1,42 @@
+button.sw, .sw-button {
+    box-sizing: border-box;
+    display: inline;
+    max-width: 100%;
+
+    margin: var(--size-half);
+    border: none;
+    padding: var(--size-half) var(--size-full);
+
+    white-space: nowrap;
+    text-align: center;
+    text-decoration: none;
+
+    color: var(--color-gray-dark);
+    background-color: var(--color-gray-light);
+
+    cursor: pointer;
+
+    &.primary {
+        color: var(--color-background);
+        background-color: var(--color-foreground);
+    }
+
+    &.text {
+        color: var(--color-foreground);
+        background-color: transparent;
+    }
+
+    &:hover, &:active, &:focus {
+        opacity: 0.8;
+    }
+
+    &:focus-visible {
+        outline: var(--size-thin) solid var(--color-foreground);
+        outline-offset: var(--size-thin);
+    }
+
+    &[disabled] {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+}

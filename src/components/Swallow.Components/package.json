@@ -1,0 +1,10 @@
+{
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "lightningcss": "^1.32.0"
+  },
+  "scripts": {
+    "build": "node build.js"
+  }
+}

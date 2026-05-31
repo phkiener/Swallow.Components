@@ -1,0 +1,11 @@
+:root {
+    --color-foreground: light-dark(#000000, #FFFFFF);
+    --color-background: light-dark(#FFFFFF, #000000);
+
+    --color-gray-dark: light-dark(#444444, #CCCCCC);
+    --color-gray-light: light-dark(#CCCCCC, #444444);
+
+    --size-thin: 1px;
+    --size-half: 0.5rem;
+    --size-full: 1rem;
+}
