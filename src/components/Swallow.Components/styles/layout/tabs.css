@@ -29,4 +29,8 @@
             display: none;
         }
     }
+
+    & > *:not(.tab-list, .tab-panels) {
+        display: none;
+    }
 }
