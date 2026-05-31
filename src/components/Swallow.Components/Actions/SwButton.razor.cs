@@ -14,17 +14,10 @@ namespace Swallow.Components.Actions;
 public sealed partial class SwButton : ComponentBase, ICanDisable, IHandleAttributes
 {
     private string buttonType = "";
-    private string variantClass = "";
 
     protected override void OnParametersSet()
     {
         buttonType = OnClick.HasDelegate ? "button" : "submit";
-        variantClass = Variant switch
-        {
-            ButtonVariant.Primary => "primary",
-            ButtonVariant.Text => "text",
-            _ => "",
-        };
     }
 
     /// <summary>

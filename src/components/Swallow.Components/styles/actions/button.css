@@ -3,18 +3,28 @@ button.sw, .sw-button {
     display: inline;
     max-width: 100%;
 
-    margin: var(--size-half);
-    border: none;
-    padding: var(--size-half) var(--size-full);
+    margin-inline: var(--size-half);
+    margin-block: var(--size-half);
 
-    white-space: nowrap;
-    text-align: center;
-    text-decoration: none;
+    border: none;
+
+    padding-inline: var(--size-full);
+    padding-block: var(--size-half);
 
     color: var(--color-gray-dark);
     background-color: var(--color-gray-light);
 
+    font-style: normal;
+    font-size: var(--size-full);
+    font-weight: normal;
+    line-height: var(--size-full);
+
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
+
     cursor: pointer;
+    user-select: none;
 
     &.primary {
         color: var(--color-background);
@@ -49,7 +59,7 @@ button.sw, .sw-button {
     gap: var(--size-full);
 
     & > :is(button.sw, .sw-button) {
-        margin: var(--size-half) 0;
+        margin-inline: 0;
     }
 
     &.joined {

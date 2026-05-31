@@ -20,3 +20,22 @@ public enum ButtonVariant
     /// </summary>
     Text = 3,
 }
+
+/// <summary>
+/// Extensions for <see cref="ButtonVariant"/>.
+/// </summary>
+public static class ButtonVariantExtensions
+{
+    extension(ButtonVariant variant)
+    {
+        /// <summary>
+        /// The expected class name for this variant, if any.
+        /// </summary>
+        public string? ClassName => variant switch
+        {
+            ButtonVariant.Primary => "primary",
+            ButtonVariant.Text => "text",
+            _ => null
+        };
+    }
+}
