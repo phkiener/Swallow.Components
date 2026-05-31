@@ -37,6 +37,19 @@ public sealed class SwTab : ComponentBase, IDisposable
     [Parameter]
     public EventCallback<bool> SelectedChanged { get; set; }
 
+    /// <summary>
+    /// A callback that is invoked when the tab is displayed.
+    /// </summary>
+    [Parameter]
+    public EventCallback<bool> OnShow { get; set; }
+
+    /// <summary>
+    /// A callback that is invoked when the tab is hidden.
+    /// </summary>
+    [Parameter]
+    public EventCallback<bool> OnHide { get; set; }
+
+
     protected override void OnInitialized()
     {
         TabManager?.Register(this);
@@ -45,9 +58,33 @@ public sealed class SwTab : ComponentBase, IDisposable
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
         // We don't *directly* render anything. The container does that for us.
-        return;
     }
 
+    internal event EventHandler? OnSelectedChanged;
+
+    internal async Task SelectAsync(bool selected)
+    {
+        if (Selected == selected)
+        {
+            return;
+        }
+
+        Selected = selected;
+        OnSelectedChanged?.Invoke(this, EventArgs.Empty);
+
+        await SelectedChanged.InvokeAsync(Selected);
+
+        if (Selected)
+        {
+            await OnShow.InvokeAsync(true);
+        }
+        else
+        {
+            await OnHide.InvokeAsync(false);
+        }
+    }
+
+    /// <inheritdoc />
     public void Dispose()
     {
         TabManager?.Unregister(this);

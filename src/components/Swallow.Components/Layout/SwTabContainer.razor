@@ -7,8 +7,11 @@
                     id="@tab.Id-handle"
                     role="tab"
                     tabindex="@(tab.Selected ? "0" : "-1")"
-                    aria-selected="@tab.Selected"
-                    aria-controls="@tab.Id-panel">
+                    aria-selected="@(tab.Selected ? "true" : "false")"
+                    aria-controls="@tab.Id-panel"
+                    data-registered="@RendererInfo.IsInteractive"
+                    @onclick="@(() => HandleTabClick(tab))"
+                    @onkeydown="@(evt => HandleTabInput(evt, tab))">
                 @tab.Title
             </button>
         }

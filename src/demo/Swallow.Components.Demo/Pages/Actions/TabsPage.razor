@@ -4,19 +4,19 @@
 <PageHeader Title="Tabs" />
 
 <SwTabContainer>
-    <SwTab>
+    <SwTab OnShow="@(() => Console.WriteLine("Show First"))" OnHide="@(() => Console.WriteLine("Hide First"))">
         <Title>First</Title>
         <Content>
             This is some content for the first tab.
         </Content>
     </SwTab>
-    <SwTab>
+    <SwTab OnShow="@(() => Console.WriteLine("Show Second"))" OnHide="@(() => Console.WriteLine("Hide Second"))">
         <Title>Second</Title>
         <Content>
             This is some content for the second tab.
         </Content>
     </SwTab>
-    <SwTab>
+    <SwTab OnShow="@(() => Console.WriteLine("Show Third"))" OnHide="@(() => Console.WriteLine("Hide Third"))">
         <Title>Third</Title>
         <Content>
             This is some content for the third tab.

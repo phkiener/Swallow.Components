@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Swallow.Components.Layout;
 
@@ -19,10 +20,36 @@ public sealed partial class SwTabContainer : ComponentBase
     protected override void OnInitialized()
     {
         tabManager.OnTabsChanged += EnqueueRender;
+        tabManager.OnSelectedTabChanged += EnqueueRender;
     }
 
     private void EnqueueRender(object? sender, EventArgs eventArgs)
     {
         StateHasChanged();
+    }
+
+    private async Task HandleTabClick(Tab targetTab)
+    {
+        foreach (var tab in tabManager.Tabs)
+        {
+            if (tab.Equals(targetTab))
+            {
+                continue;
+            }
+
+            await tab.SelectAsync(false);
+        }
+
+        await targetTab.SelectAsync(true);
+    }
+
+    private Task HandleTabInput(KeyboardEventArgs eventArgs, Tab targetTab)
+    {
+        if (eventArgs.Key is "Enter" or " ")
+        {
+            return HandleTabClick(targetTab);
+        }
+
+        return Task.CompletedTask;
     }
 }
