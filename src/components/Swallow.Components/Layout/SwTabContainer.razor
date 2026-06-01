@@ -1,5 +1,5 @@
-<div class="sw-tabs">
-    <div class="tab-list" role="tablist"> @* TODO: The keydown here should be handled server-side as well in interactive. *@
+<div class="sw-tabs" data-registered="@RendererInfo.IsInteractive">
+    <div class="tab-list" role="tablist" @onkeydown="@HandleTabListInput">
         @foreach (var tab in tabManager.Tabs)
         {
             <button type="button"
@@ -9,7 +9,6 @@
                     tabindex="@(tab.Selected ? "0" : "-1")"
                     aria-selected="@(tab.Selected ? "true" : "false")"
                     aria-controls="@tab.Id-panel"
-                    data-registered="@RendererInfo.IsInteractive"
                     @onclick="@(() => HandleTabClick(tab))"
                     @onkeydown="@(evt => HandleTabInput(evt, tab))">
                 @tab.Title

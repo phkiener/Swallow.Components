@@ -1,27 +1,24 @@
 // Mostly taken from https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Reference/Roles/tab_role
 
 export default function registerTabs(element: HTMLElement) {
-    const candidates = element.querySelectorAll<HTMLDivElement>(".sw-tabs");
+    const candidates = element.querySelectorAll<HTMLDivElement>(".sw-tabs:not([data-registered])");
     for (const candidate of candidates) {
         registerTab(candidate);
     }
 }
 
 function registerTab(element: HTMLDivElement) {
-    const tabList = element.querySelector<HTMLDivElement>(":scope > .tab-list:not([data-registered])");
+    const tabList = element.querySelector<HTMLDivElement>(":scope > .tab-list");
     tabList?.addEventListener("keydown", handleTabListInput);
-    tabList?.setAttribute("data-registered", "true");
 
     const { Tabs: tabs } = inspect(element);
     for (const tab of tabs) {
-        if (tab.hasAttribute("data-registered")) {
-            continue;
-        }
 
         tab.addEventListener("click", handleTabClick);
         tab.addEventListener("keydown", handleTabInput);
-        tab.setAttribute("data-registered", "true");
     }
+
+    element.setAttribute("data-registered", "true");
 }
 
 function handleTabClick(event: MouseEvent) {
