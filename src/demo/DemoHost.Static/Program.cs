@@ -1,7 +1,9 @@
 using DemoHost.Static;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
+using Swallow.Components.Demo;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddDemoServices();
 builder.Services.AddRazorComponents();
 
 builder.Services.AddAuthentication();

@@ -2,15 +2,17 @@ using DemoHost.Reactive;
 using DemoHost.Reactive.Examples;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
+using Swallow.Components.Demo;
 using Swallow.Components.Reactive;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddDemoServices();
 builder.Services.AddRazorComponents()
     .AddReactiveComponents();
 
 builder.Services.RegisterPersistentService<ServiceWithState>(RenderMode.StaticReactive);
-
 builder.Services.AddScoped<ServiceWithState>();
+
 builder.Services.AddAuthentication();
 builder.Services.AddAuthorization();
 
