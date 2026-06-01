@@ -6,7 +6,7 @@ namespace Swallow.Components.Actions;
 /// <summary>
 /// A link, styled just like an <see cref="SwButton"/>.
 /// </summary>
-public sealed partial class SwLinkButton : ComponentBase, IHandleAttributes
+public sealed partial class SwLinkButton : ComponentBase, IHasAdditionalAttributes
 {
     /// <summary>
     /// The <c>href</c> attribute.

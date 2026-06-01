@@ -7,7 +7,7 @@ namespace Swallow.Components.Actions;
 /// <summary>
 /// A <see cref="SwButton" /> that displays only an icon.
 /// </summary>
-public sealed partial class SwIconButton : ComponentBase, ICanDisable, IHandleAttributes
+public sealed partial class SwIconButton : ComponentBase, ICanDisable, IHasAdditionalAttributes
 {
     private string buttonType = "";
 

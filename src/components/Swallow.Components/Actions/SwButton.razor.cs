@@ -11,7 +11,7 @@ namespace Swallow.Components.Actions;
 /// While a <c>type</c> is inferred based on whether <see cref="OnClick"/> is set or not, it can
 /// still be overridden by setting <c>type="..."</c> explicitly.
 /// </remarks>
-public sealed partial class SwButton : ComponentBase, ICanDisable, IHandleAttributes
+public sealed partial class SwButton : ComponentBase, ICanDisable, IHasAdditionalAttributes
 {
     private string buttonType = "";
 
