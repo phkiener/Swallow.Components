@@ -4,6 +4,9 @@ namespace Swallow.Components.Utils;
 /// A default <see cref="IElementIdFactory"/> using <see cref="Guid"/>s to guarantee
 /// uniqueness.
 /// </summary>
+/// <remarks>
+/// The generated ids will follow the format <c>_$(PREFIX)-$(GUID)</c>.
+/// </remarks>
 public sealed class DefaultElementIdFactory : IElementIdFactory
 {
     /// <inheritdoc />
