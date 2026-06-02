@@ -1,0 +1,11 @@
+@page "/display/alert"
+@using Swallow.Components.Display
+
+<PageHeader Title="Alert" />
+<SupportedRenderModes Static WebSocket WebAssembly />
+
+<SwAlert>Just a message</SwAlert>
+<SwAlert>
+    <Title>Alert!</Title>
+    <Content>There is danger afoot!</Content>
+</SwAlert>
