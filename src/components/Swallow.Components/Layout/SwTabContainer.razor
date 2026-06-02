@@ -1,3 +1,15 @@
+@*
+    TODO for reactive rendering:
+
+    I need two different kinds of interactivity - persistent server with JS interop and "slim".
+    For JS interop, we can keep the code as-is, all good.
+    For static rendering, we don't need to change anything either; the callbacks are never invoked because.. well.. it's static.
+    For my plan for reactive rendering, I do need to change the code. Because the JS runtime will *not* be there, hence I need the
+    code to register the client-side script like for static rendering.
+    But OnShow, OnHide and SelectedChanged should be invoked, so I'd need a different event to be executed here. OnActivated and OnDecativated come to
+    mind, but they're not really meant for this case... maybe load works?
+*@
+
 <div class="sw-tabs" data-registered="@RendererInfo.IsInteractive">
     <div class="tab-list" role="tablist" @onkeydown="@OnTabListInput">
         @foreach (var tab in registeredTabs)
