@@ -2,13 +2,15 @@ import { bundle } from "lightningcss";
 import { build } from "tsdown";
 import * as fs from "node:fs";
 
+const targetDirectory = process.env.OUT_DIR;
+
 // scripts
-const rootScript = "scripts/root.ts";
+const rootScript = "client/js/root.ts";
 if (fs.existsSync(rootScript)) {
     await build({
         entry: rootScript,
         format: "esm",
-        outDir: process.env.OUT_DIR,
+        outDir: targetDirectory,
         dts: false,
         minify: true,
         platform: "browser",
@@ -16,10 +18,10 @@ if (fs.existsSync(rootScript)) {
 }
 
 // styles
-const rootStyle = "styles/root.css";
+const rootStyle = "client/css/root.css";
 if (fs.existsSync(rootStyle)) {
     let { code } = await bundle({ filename: rootStyle, monify: true });
 
-    const targetFile = process.env.OUT_DIR + "styles.css";
+    const targetFile = targetDirectory + "styles.css";
     await fs.writeFileSync(targetFile, code);
 }
