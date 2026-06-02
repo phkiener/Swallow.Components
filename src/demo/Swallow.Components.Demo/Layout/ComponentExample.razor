@@ -1,0 +1,26 @@
+@using Swallow.Components.Layout
+
+<SwTabContainer>
+    <SwTab>
+        <Title>Example</Title>
+        <Content>
+            @ChildContent
+        </Content>
+    </SwTab>
+
+    <SwTab>
+        <Title>Code</Title>
+        <Content>
+            Here!
+        </Content>
+    </SwTab>
+
+    <SwTab>
+        <Title>DOM</Title>
+        <Content>
+            <pre>
+                <code>@renderedMarkup</code>
+            </pre>
+        </Content>
+    </SwTab>
+</SwTabContainer>
