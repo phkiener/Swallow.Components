@@ -1,6 +1,6 @@
 using Microsoft.JSInterop;
 
-namespace Swallow.Components.Utils;
+namespace Swallow.Components.Utils.Internal;
 
 internal static class InteropHelper
 {

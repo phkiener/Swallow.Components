@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
-using Swallow.Components.Utils;
+using Swallow.Components.Utils.Internal;
 
 namespace Swallow.Components.Layout;
 
