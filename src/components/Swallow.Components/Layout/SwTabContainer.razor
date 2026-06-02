@@ -1,35 +1,36 @@
 <div class="sw-tabs" data-registered="@RendererInfo.IsInteractive">
-    <div class="tab-list" role="tablist" @onkeydown="@HandleTabListInput">
-        @foreach (var tab in tabManager.Tabs)
+    <div class="tab-list" role="tablist" @onkeydown="@OnTabListInput">
+        @foreach (var tab in registeredTabs)
         {
             <button type="button"
                     class="sw text"
-                    id="@tab.Id-handle"
+                    id="@tab.TabId"
                     role="tab"
                     tabindex="@(tab.Selected ? "0" : "-1")"
                     aria-selected="@(tab.Selected ? "true" : "false")"
-                    aria-controls="@tab.Id-panel"
-                    @onclick="@(() => HandleTabClick(tab))"
-                    @onkeydown="@(evt => HandleTabInput(evt, tab))">
+                    aria-controls="@tab.PanelId"
+                    @onclick="@(() => OnTabClicked(tab))"
+                    @key="tab.TabId">
                 @tab.Title
             </button>
         }
     </div>
 
     <div class="tab-panels">
-        @foreach (var tab in tabManager.Tabs)
+        @foreach (var tab in registeredTabs)
         {
-            <div id="@tab.Id-panel"
+            <div id="@tab.PanelId"
                  role="tabpanel"
                  tabindex="0"
                  hidden="@(!tab.Selected)"
-                 aria-labelledby="@tab.Id-handle">
+                 aria-labelledby="@tab.TabId"
+                 @key="tab.PanelId">
                 @tab.Content
             </div>
         }
     </div>
 
-    <CascadingValue Value="tabManager" IsFixed>
+    <CascadingValue Value="@this" IsFixed>
         @ChildContent
     </CascadingValue>
 </div>

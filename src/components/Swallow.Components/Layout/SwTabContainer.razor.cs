@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
+using Swallow.Components.Utils;
 
 namespace Swallow.Components.Layout;
 
@@ -9,7 +10,7 @@ namespace Swallow.Components.Layout;
 /// </summary>
 public sealed partial class SwTabContainer(IJSRuntime? jsRuntime = null) : ComponentBase
 {
-    private readonly TabManager tabManager = new();
+    private readonly List<SwTab> registeredTabs = [];
 
     /// <summary>
     /// The <see cref="SwTab"/>s to display.
@@ -18,74 +19,99 @@ public sealed partial class SwTabContainer(IJSRuntime? jsRuntime = null) : Compo
     [EditorRequired]
     public required RenderFragment ChildContent { get; set; }
 
-    protected override void OnInitialized()
+    internal void Register(SwTab tab)
     {
-        tabManager.OnTabsChanged += EnqueueRender;
-        tabManager.OnSelectedTabChanged += EnqueueRender;
-    }
+        if (registeredTabs.Contains(tab))
+        {
+            return;
+        }
 
-    private void EnqueueRender(object? sender, EventArgs eventArgs)
-    {
+        registeredTabs.Add(tab);
+
+        var selectedTab = registeredTabs.FirstOrDefault(static t => t.Selected);
+        if (selectedTab is null && !tab.Selected)
+        {
+            tab.Select(true);
+        }
+        else if (selectedTab is not null && tab.Selected)
+        {
+            selectedTab.Select(false);
+        }
+
         StateHasChanged();
     }
 
-    private async Task HandleTabListInput(KeyboardEventArgs eventArgs)
+    internal void Remove(SwTab tab)
+    {
+        var tabIndex = registeredTabs.IndexOf(tab);
+        if (tabIndex is -1)
+        {
+            return;
+        }
+
+        if (tab.Selected)
+        {
+            var newSelectedTab = registeredTabs.ElementAtOrDefault(tabIndex + 1)
+                                 ?? registeredTabs.ElementAtOrDefault(tabIndex - 1);
+
+            tab.Select(false);
+            newSelectedTab?.Select(true);
+        }
+
+        registeredTabs.Remove(tab);
+        StateHasChanged();
+    }
+
+    private async Task OnTabListInput(KeyboardEventArgs eventArgs)
     {
         if (jsRuntime is null)
         {
             return;
         }
 
-        var focusedElement = await jsRuntime.GetValueAsync<IJSObjectReference>("document.activeElement");
-        var id = await focusedElement.GetValueAsync<string?>("id");
-
-        var matchingTab = tabManager.Tabs.FirstOrDefault(t => t.Id + "-handle" == id);
-        if (matchingTab is null)
+        var focusedElementId = await jsRuntime.GetFocusedElementIdAsync();
+        var matchingTab = registeredTabs.FirstOrDefault(t => t.TabId == focusedElementId);
+        if (focusedElementId is null || matchingTab is null)
         {
             return;
         }
 
-        var currentIndex = tabManager.Tabs.Index().SingleOrDefault(t => t.Item == matchingTab).Index;
+        if (eventArgs.Key is "Enter" or " ")
+        {
+            var selectedTab = registeredTabs.FirstOrDefault(static t => t.Selected);
+            selectedTab?.Select(false);
+            matchingTab.Select(true);
+
+            StateHasChanged();
+            return;
+        }
+
+        var currentIndex = registeredTabs.IndexOfBy(t => t.TabId, focusedElementId);
         var nextIndex = eventArgs.Key switch
         {
             "Home" => 0,
-            "End" => tabManager.Tabs.Count - 1,
-            "ArrowLeft" when currentIndex is 0 => tabManager.Tabs.Count - 1,
-            "ArrowLeft" => (currentIndex - 1) % tabManager.Tabs.Count,
-            "ArrowRight" => (currentIndex + 1) % tabManager.Tabs.Count,
+            "End" => registeredTabs.Count - 1,
+            "ArrowLeft" when currentIndex is 0 => registeredTabs.Count - 1,
+            "ArrowLeft" => (currentIndex - 1) % registeredTabs.Count,
+            "ArrowRight" => (currentIndex + 1) % registeredTabs.Count,
             _ => currentIndex
         };
 
         if (currentIndex != nextIndex)
         {
-            var targetTab = tabManager.Tabs[nextIndex].Id;
-            var targetElement = await jsRuntime.InvokeAsync<IJSObjectReference>("document.getElementById", [targetTab + "-handle"]);
-            await targetElement.InvokeVoidAsync("focus", new { focusVisible = true });
-        }
-    }
-
-    private async Task HandleTabClick(Tab targetTab)
-    {
-        foreach (var tab in tabManager.Tabs)
-        {
-            if (tab.Equals(targetTab))
+            var targetTab = registeredTabs.ElementAtOrDefault(nextIndex)?.TabId;
+            if (targetTab is not null)
             {
-                continue;
+                await jsRuntime.FocusElementWithIdAsync(targetTab);
             }
-
-            await tab.SelectAsync(false);
         }
-
-        await targetTab.SelectAsync(true);
     }
 
-    private Task HandleTabInput(KeyboardEventArgs eventArgs, Tab targetTab)
+    private void OnTabClicked(SwTab targetTab)
     {
-        if (eventArgs.Key is "Enter" or " ")
-        {
-            return HandleTabClick(targetTab);
-        }
+        var selectedTab = registeredTabs.FirstOrDefault(static t => t.Selected);
+        selectedTab?.Select(false);
 
-        return Task.CompletedTask;
+        targetTab.Select(true);
     }
 }

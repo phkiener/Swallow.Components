@@ -1,15 +1,16 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
+using Swallow.Components.Utils;
 
 namespace Swallow.Components.Layout;
 
 /// <summary>
 /// A single tab to be displayed in a <see cref="SwTabContainer"/>.
 /// </summary>
-public sealed class SwTab : ComponentBase, IDisposable
+public sealed class SwTab(ElementId id) : ComponentBase, IDisposable
 {
     [CascadingParameter]
-    private TabManager? TabManager { get; set; }
+    private SwTabContainer? TabContainer { get; set; }
 
     /// <summary>
     /// The title of this tab.
@@ -49,10 +50,9 @@ public sealed class SwTab : ComponentBase, IDisposable
     [Parameter]
     public EventCallback<bool> OnHide { get; set; }
 
-
     protected override void OnInitialized()
     {
-        TabManager?.Register(this);
+        TabContainer?.Register(this);
     }
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -60,9 +60,10 @@ public sealed class SwTab : ComponentBase, IDisposable
         // We don't *directly* render anything. The container does that for us.
     }
 
-    internal event EventHandler? OnSelectedChanged;
+    internal ElementId TabId { get; } = id;
+    internal ElementId PanelId { get; } = new(id + "-panel");
 
-    internal async Task SelectAsync(bool selected)
+    internal void Select(bool selected)
     {
         if (Selected == selected)
         {
@@ -70,23 +71,27 @@ public sealed class SwTab : ComponentBase, IDisposable
         }
 
         Selected = selected;
-        OnSelectedChanged?.Invoke(this, EventArgs.Empty);
-
-        await SelectedChanged.InvokeAsync(Selected);
-
         if (Selected)
         {
-            await OnShow.InvokeAsync(true);
+            _ = InvokeAsync(async () =>
+            {
+                await SelectedChanged.InvokeAsync(true);
+                await OnShow.InvokeAsync();
+            });
         }
         else
         {
-            await OnHide.InvokeAsync(false);
+            _ = InvokeAsync(async () =>
+            {
+                await SelectedChanged.InvokeAsync(false);
+                await OnHide.InvokeAsync();
+            });
         }
     }
 
     /// <inheritdoc />
     public void Dispose()
     {
-        TabManager?.Unregister(this);
+        TabContainer?.Remove(this);
     }
 }
