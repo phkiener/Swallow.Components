@@ -1,12 +1,13 @@
 .sw-badge {
     box-sizing: border-box;
+    height: 2em;
     max-width: 100%;
 
     display: inline-flex;
     flex-direction: row;
     align-items: center;
     justify-content: center;
-    gap: var(--size-full);
+    gap: var(--size-half);
 
     margin-inline: var(--size-half);
     margin-block: var(--size-half);
@@ -18,9 +19,9 @@
     padding-block: var(--size-half);
 
     font-style: normal;
-    font-size: var(--size-full);
+    font-size: inherit;
     font-weight: normal;
-    line-height: var(--size-full);
+    line-height: inherit;
 
     text-align: left;
     text-decoration: none;
@@ -31,6 +32,9 @@
 
     color: var(--color-background);
     background-color: var(--color-foreground);
+
+    overflow: hidden;
+    text-overflow: ellipsis;
 
     & > .label, & > .value {
         display: inline-flex;
@@ -47,6 +51,10 @@
         &:empty {
             display: none;
         }
+
+        height: calc(1em + 2 * var(--size-mini));
+        max-height: 100%;
+        max-width: 100%;
 
         margin-inline: 0;
         margin-block: calc(-1 * var(--size-half));

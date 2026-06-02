@@ -1,0 +1,35 @@
+@using Swallow.Components.Display
+@using Swallow.Components.Icons
+
+<section>
+    <header>Supported on:</header>
+
+    <ul>
+        <li>
+            <SwBadge>
+                <Label>Static Server-Side</Label>
+                <Value>
+                    <SwIcon Icon="@(Static ? IconType.Check : IconType.Cross)" />
+                </Value>
+            </SwBadge>
+        </li>
+
+        <li>
+            <SwBadge>
+                <Label>Interactive Server</Label>
+                <Value>
+                    <SwIcon Icon="@(Static ? IconType.Check : IconType.Cross)" />
+                </Value>
+            </SwBadge>
+        </li>
+
+        <li>
+            <SwBadge>
+                <Label>Interactive WebAssembly</Label>
+                <Value>
+                    <SwIcon Icon="@(Static ? IconType.Check : IconType.Cross)" />
+                </Value>
+            </SwBadge>
+        </li>
+    </ul>
+</section>
