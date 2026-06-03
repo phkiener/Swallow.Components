@@ -1,11 +1,12 @@
 using Microsoft.AspNetCore.Components;
+using Swallow.Components.Features;
 
 namespace Swallow.Components.Display;
 
 /// <summary>
 /// A small badge to display a bit of data in a concise matter.
 /// </summary>
-public sealed partial class SwBadge : ComponentBase
+public sealed partial class SwBadge : ComponentBase, IHasAdditionalAttributes
 {
     /// <summary>
     /// An alternative way of setting <see cref="Label"/>.
@@ -24,4 +25,8 @@ public sealed partial class SwBadge : ComponentBase
     /// </summary>
     [Parameter]
     public RenderFragment? Value { get; set; }
+
+    /// <inheritdoc />
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 }

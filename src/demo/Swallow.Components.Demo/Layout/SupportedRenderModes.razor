@@ -6,28 +6,37 @@
 
     <ul>
         <li>
-            <SwBadge>
+            <SwBadge class="@(Static ? "sw-green" : "sw-red")">
                 <Label>Static Server-Side</Label>
                 <Value>
-                    <SwIcon Icon="@(Static ? IconType.Check : IconType.Cross)" />
+                    <SwIcon Icon="@(Static ? IconType.Check : IconType.X)" />
                 </Value>
             </SwBadge>
         </li>
 
         <li>
-            <SwBadge>
+            <SwBadge class="@(Reactive ? "sw-green" : "sw-red")">
+                <Label>Reactive</Label>
+                <Value>
+                    <SwIcon Icon="@(Reactive ? IconType.Check : IconType.X)" />
+                </Value>
+            </SwBadge>
+        </li>
+
+        <li>
+            <SwBadge class="@(WebSocket ? "sw-green" : "sw-red")">
                 <Label>Interactive Server</Label>
                 <Value>
-                    <SwIcon Icon="@(Static ? IconType.Check : IconType.Cross)" />
+                    <SwIcon Icon="@(WebSocket ? IconType.Check : IconType.X)" />
                 </Value>
             </SwBadge>
         </li>
 
         <li>
-            <SwBadge>
+            <SwBadge class="@(WebAssembly ? "sw-green" : "sw-red")">
                 <Label>Interactive WebAssembly</Label>
                 <Value>
-                    <SwIcon Icon="@(Static ? IconType.Check : IconType.Cross)" />
+                    <SwIcon Icon="@(WebAssembly ? IconType.Check : IconType.X)" />
                 </Value>
             </SwBadge>
         </li>

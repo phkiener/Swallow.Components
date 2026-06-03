@@ -11,3 +11,15 @@
     --size-full: 1em;
     --size-max: 9999px;
 }
+
+.sw-green {
+    --color-foreground: green;
+}
+
+.sw-red {
+    --color-foreground: red;
+}
+
+.sw-blue {
+    --color-foreground: blue;
+}

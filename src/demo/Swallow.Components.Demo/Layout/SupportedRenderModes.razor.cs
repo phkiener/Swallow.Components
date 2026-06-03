@@ -12,4 +12,7 @@ public sealed partial class SupportedRenderModes : ComponentBase
 
     [Parameter]
     public bool WebAssembly { get; set; }
+
+    [Parameter]
+    public bool Reactive { get; set; }
 }

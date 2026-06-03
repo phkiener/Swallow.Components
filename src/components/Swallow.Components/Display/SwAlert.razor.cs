@@ -1,11 +1,12 @@
 using Microsoft.AspNetCore.Components;
+using Swallow.Components.Features;
 
 namespace Swallow.Components.Display;
 
 /// <summary>
 /// An alert message to raise awareness for the user.
 /// </summary>
-public sealed partial class SwAlert : ComponentBase
+public sealed partial class SwAlert : ComponentBase, IHasAdditionalAttributes
 {
     /// <summary>
     /// An alternative way of setting <see cref="Content"/>.
@@ -24,4 +25,8 @@ public sealed partial class SwAlert : ComponentBase
     /// </summary>
     [Parameter]
     public RenderFragment? Content { get; set; }
+
+    /// <inheritdoc />
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 }

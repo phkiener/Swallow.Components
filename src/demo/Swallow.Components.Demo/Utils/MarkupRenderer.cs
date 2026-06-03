@@ -39,10 +39,35 @@ public sealed class MarkupRenderer(IServiceProvider serviceProvider, ILoggerFact
         using var xmlWriter = XmlTextWriter.Create(builder, XmlWriterSettings);
 
         var document = XDocument.Parse(markup);
+        foreach (var node in document.DescendantNodes().OfType<XText>())
+        {
+            var depth = Depth(node) - 1;
+
+            var leadingWhitespace = node.PreviousNode is null
+                ? $"\n{new string(' ', 2 * (depth + 1))}"
+                : $"\n\n{new string(' ', 2 * (depth + 1))}";
+            var trailingWhitespace = $"\n{new string(' ', 2 * depth)}";
+
+            node.Value = $"{leadingWhitespace}{node.Value.Trim()}{trailingWhitespace}";
+        }
+
         document.WriteTo(xmlWriter);
         xmlWriter.Flush();
 
         return builder.ToString();
+    }
+
+    private static int Depth(XNode node)
+    {
+        var depth = 0;
+        XNode? current = node;
+        while (current?.Parent != null)
+        {
+            current = current.Parent;
+            depth++;
+        }
+
+        return depth;
     }
 
     private sealed class Fragment : ComponentBase
