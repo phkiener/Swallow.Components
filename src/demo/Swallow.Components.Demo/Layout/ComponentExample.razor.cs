@@ -3,9 +3,10 @@ using Swallow.Components.Demo.Utils;
 
 namespace Swallow.Components.Demo.Layout;
 
-public sealed partial class ComponentExample(MarkupRenderer markupRenderer) : ComponentBase
+public sealed partial class ComponentExample(RazorRenderer razorRenderer, MarkupRenderer markupRenderer) : ComponentBase
 {
     private string renderedMarkup = "";
+    private string renderedRazor = "";
 
     [Parameter]
     [EditorRequired]
@@ -13,6 +14,7 @@ public sealed partial class ComponentExample(MarkupRenderer markupRenderer) : Co
 
     protected override async Task OnParametersSetAsync()
     {
-        renderedMarkup = await markupRenderer.RenderAsMarkupAsync(ChildContent);
+        renderedRazor = await razorRenderer.RenderAsync(ChildContent);
+        renderedMarkup = await markupRenderer.RenderAsync(ChildContent);
     }
 }

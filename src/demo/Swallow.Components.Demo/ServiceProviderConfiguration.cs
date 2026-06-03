@@ -9,6 +9,7 @@ public static class ServiceProviderConfiguration
     {
         services.AddSwallowComponents();
         services.AddTransient<MarkupRenderer>();
+        services.AddTransient<RazorRenderer>();
 
         return services;
     }

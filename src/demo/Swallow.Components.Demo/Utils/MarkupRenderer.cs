@@ -13,7 +13,7 @@ public sealed class MarkupRenderer(IServiceProvider serviceProvider, ILoggerFact
     private static readonly XmlWriterSettings XmlWriterSettings = new() { OmitXmlDeclaration = true, Indent = true };
     private readonly HtmlRenderer htmlRenderer = new(serviceProvider, loggerFactory);
 
-    public async Task<string> RenderAsMarkupAsync(RenderFragment renderFragment)
+    public async Task<string> RenderAsync(RenderFragment renderFragment)
     {
         var fragmentMarkup = await RenderFragmentToMarkupAsync(renderFragment);
 
