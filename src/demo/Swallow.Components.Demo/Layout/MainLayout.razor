@@ -26,7 +26,17 @@
 
     <main>
         <article>
-            @Body
+            <CascadingValue Value="@this" IsFixed>
+                @Body
+            </CascadingValue>
         </article>
+
+        <aside>
+            <span>On this page:</span>
+            @foreach (var subHeading in sections)
+            {
+                <a href="@navigationManager.Uri#@(subHeading.Anchor)">@subHeading.Title</a>
+            }
+        </aside>
     </main>
 </div>

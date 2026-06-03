@@ -66,13 +66,21 @@
 }
 
 #app > main {
+    position: relative;
+
     grid-area: main;
     overflow: auto;
+
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: flex-start;
 
     padding: 16px;
 
     & > article {
-        width: 120ch;
+        flex: 3 1 fit-content;
+        max-width: 120ch;
 
         display: flex;
         flex-direction: column;
@@ -83,5 +91,20 @@
         & > :is(h1, h2, h3, h4, h5, h6, p) {
             margin: 0;
         }
+    }
+
+    & > aside {
+        position: sticky;
+        top: 0;
+
+        flex: 1 0 fit-content;
+
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: flex-start;
+        gap: 4px;
+
+        padding: 16px;
     }
 }
