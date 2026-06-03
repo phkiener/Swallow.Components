@@ -4,26 +4,44 @@
 <PageHeader Title="Alert" />
 <SupportedRenderModes Static WebSocket WebAssembly />
 
+<p>
+    A message box for fixed content. This is not meant to be used as a reaction
+    to indicate success or failure of an operation (i.e. a toast), but rather
+    for a (mostly) constant message to the user. A hint that something needs
+    to be taken care of, for example.
+</p>
+
 <SectionHeader Title="Examples" />
-<SwAlert>Just a message</SwAlert>
-<SwAlert>
-    <Title>Alert!</Title>
-    <Content>There is danger afoot!</Content>
-</SwAlert>
+
+<p>
+    Plain alerts can be rendered with just a message.
+</p>
+
+<ComponentExample>
+    <SwAlert>You didn't bring out the trash yet!</SwAlert>
+</ComponentExample>
+
+<p>You can also set a title for the alert.</p>
 
 <ComponentExample>
     <SwAlert>
-        <Title>Alert!</Title>
-        <Content>
-            <span class="urgh">
-                There is danger afoot!
-            </span>
-
-            yeet
-        </Content>
+        <Title>Warning</Title>
+        <Content>You haven't set a destination yet.</Content>
     </SwAlert>
 </ComponentExample>
 
+<p>
+    Additional styling, e.g. applying colors using <code class="sw">sw-red</code>, is possible.
+</p>
+
+<ComponentExample>
+    <SwAlert class="sw-red">Device is not connected.</SwAlert>
+</ComponentExample>
+
 <SectionHeader Title="Reference" />
-<InlineDocumentation Type="@typeof(SwAlert)" />
+
+<p>
+    <code class="sw">@nameof(SwAlert)</code>: <InlineDocumentation Type="@typeof(SwAlert)" />
+</p>
+
 <ComponentParameterTable TComponent="SwAlert" />
