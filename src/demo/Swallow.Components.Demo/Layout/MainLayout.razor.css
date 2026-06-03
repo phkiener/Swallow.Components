@@ -65,6 +65,13 @@
     }
 }
 
+nav > span {
+    margin-inline: 0;
+    margin-block: 1lh 0;
+    font-size: 18px;
+    font-weight: bold;
+}
+
 #app > main {
     position: relative;
 
