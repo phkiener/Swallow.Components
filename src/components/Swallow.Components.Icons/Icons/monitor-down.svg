@@ -1,11 +1,9 @@
 <svg
   xmlns="http://www.w3.org/2000/svg"
-  width="var(--icon-size, 1rem)"
-  height="var(--icon-size, 1rem)"
   viewBox="0 0 24 24"
+  style="width: var(--icon-size, 1rem); height: var(--icon-size, 1rem); stroke-width: var(--stroke-width, 2px);"
   fill="none"
   stroke="currentColor"
-  stroke-width="var(--stroke-width, 2px)"
   stroke-linecap="round"
   stroke-linejoin="round"
 >
