@@ -50,11 +50,13 @@ public sealed class SwTab(ElementId id) : ComponentBase, IDisposable
     [Parameter]
     public EventCallback<bool> OnHide { get; set; }
 
+    /// <inheritdoc />
     protected override void OnInitialized()
     {
         TabContainer?.Register(this);
     }
 
+    /// <inheritdoc />
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
         // We don't *directly* render anything. The container does that for us.

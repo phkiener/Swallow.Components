@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Swallow.Components.Demo.Utils;
 
-public sealed record ComponentParameter(string Name, Type Type, object? DefaultValue, bool Required, bool IsNullable, string Description);
+public sealed record ComponentParameter(string Name, Type Type, object? DefaultValue, bool Required, bool IsNullable);
 
 public sealed class ComponentParameterInspector(IServiceProvider serviceProvider)
 {
@@ -32,8 +32,7 @@ public sealed class ComponentParameterInspector(IServiceProvider serviceProvider
                 Type: parameterProperty.PropertyType,
                 DefaultValue: defaultValue,
                 Required: isRequired,
-                IsNullable: nullabilityInfo.WriteState is NullabilityState.Nullable,
-                Description: "");
+                IsNullable: nullabilityInfo.WriteState is NullabilityState.Nullable);
         }
     }
 }

@@ -8,12 +8,13 @@
         <th>Description</th>
         <th>Default Value</th>
     </tr>
+
     @foreach (var parameter in parameters)
     {
         <tr>
             <td>@parameter.Name @(parameter.Required ? "*" : "")</td>
             <td><code class="sw">@parameter.Type.PrettyName(parameter.IsNullable)</code></td>
-            <td>@parameter.Description</td>
+            <td><InlineDocumentation Type="@typeof(TComponent)" Property="@parameter.Name" /> </td>
             <td><code class="sw">@parameter.DefaultValue</code></td>
         </tr>
     }

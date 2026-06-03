@@ -11,6 +11,7 @@ public sealed partial class SwIconButton : ComponentBase, ICanDisable, IHasAddit
 {
     private string buttonType = "";
 
+    /// <inheritdoc />
     protected override void OnParametersSet()
     {
         buttonType = OnClick.HasDelegate ? "button" : "submit";
