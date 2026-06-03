@@ -1,0 +1,20 @@
+@using Swallow.Components.Demo.Utils
+@typeparam TComponent
+
+<table class="sw-table">
+    <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default Value</th>
+    </tr>
+    @foreach (var parameter in parameters)
+    {
+        <tr>
+            <td>@parameter.Name @(parameter.Required ? "*" : "")</td>
+            <td><code class="sw">@parameter.Type.PrettyName(parameter.IsNullable)</code></td>
+            <td>@parameter.Description</td>
+            <td><code class="sw">@parameter.DefaultValue</code></td>
+        </tr>
+    }
+</table>

@@ -1,0 +1,32 @@
+code.sw {
+    padding-inline: var(--size-half);
+    padding-block: var(--size-mini);
+
+    color: var(--color-gray-dark);
+    background-color: var(--color-gray-light);
+
+    font-family: monospace;
+    font-size: 0.8rem;
+
+    white-space: nowrap;
+}
+
+code.sw:empty {
+    background-color: transparent;
+}
+
+pre:has(code.sw) {
+    border-left: var(--size-half) solid var(--color-gray-dark);
+    padding: var(--size-half);
+
+    background-color: var(--color-gray-light);
+}
+
+pre > code.sw {
+    overflow: auto;
+
+    border: none;
+
+    background-color: unset;
+    white-space: pre;
+}
