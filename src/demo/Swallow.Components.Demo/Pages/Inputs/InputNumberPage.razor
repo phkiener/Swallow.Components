@@ -1,0 +1,22 @@
+@page "/inputs/number"
+@using Swallow.Components.Inputs
+@using Swallow.Components.Typography
+
+<PageHeader Title="Number Input" />
+<SupportedRenderModes Static WebSocket WebAssembly />
+
+<p>
+    A basic input field for numeric values, e.g. <SwCode>int</SwCode> or <SwCode>decimal</SwCode>.
+</p>
+
+<SectionHeader Title="Examples" Anchor="example" />
+
+<ComponentExample ExampleComponent="@typeof(InputNumber_Example)" />
+
+<SectionHeader Title="Reference" Anchor="reference" />
+
+<p>
+    <code class="sw">@nameof(SwInputNumber<>)</code>: <InlineDocumentation Type="@typeof(SwInputNumber<>)" />
+</p>
+
+<ComponentParameterTable TComponent="SwInputNumber<int>" />

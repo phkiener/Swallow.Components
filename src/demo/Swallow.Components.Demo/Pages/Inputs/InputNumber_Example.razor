@@ -1,0 +1,18 @@
+@using Swallow.Components.Inputs
+
+<div style="display: flex; flex-direction: column; gap: .5rem">
+    <SwInputNumber @bind-Value="@Numeric"/>
+    <SwInputNumber @bind-Value="@Decimal"/>
+    <SwInputNumber @bind-Value="@Nullable"/>
+    <SwInputNumber @bind-Value="@Numeric" placeholder="Placeholder" />
+    <SwInputNumber @bind-Value="@Numeric" Disabled />
+    <SwInputNumber @bind-Value="@Numeric" readonly />
+</div>
+
+@code {
+
+    private int Numeric { get; set; } = 42;
+    private decimal Decimal { get; set; } = 5.2m;
+    private double? Nullable { get; set; } = null;
+
+}

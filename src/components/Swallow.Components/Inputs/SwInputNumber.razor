@@ -1,0 +1,12 @@
+@typeparam T
+@inherits InputNumber<T>
+
+<input disabled="@Disabled"
+       step="any"
+       inputmode="@InputMode"
+       @attributes="AdditionalAttributes"
+       name="@NameAttributeValue"
+       type="text"
+       class="@CssClass sw-input"
+       @bind="CurrentValueAsString"
+       @ref="Element">
