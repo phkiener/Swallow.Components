@@ -10,13 +10,7 @@
 
 <SectionHeader Title="Examples" Anchor="example" />
 
-<ComponentExample>
-    <div style="display: flex; flex-direction: column; gap: 1lh;">
-        <SwInputText @bind-Value="@Binding" />
-        <SwInputText @bind-Value="@Binding" Disabled />
-        <SwInputText @bind-Value="@Binding" placeholder="Input" />
-    </div>
-</ComponentExample>
+<ComponentExample ExampleComponent="@typeof(InputText_Example)" />
 
 <SectionHeader Title="Reference" Anchor="reference" />
 
@@ -25,9 +19,3 @@
 </p>
 
 <ComponentParameterTable TComponent="SwInputText" />
-
-@code {
-
-    private string Binding { get; set; } = "";
-
-}

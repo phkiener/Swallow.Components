@@ -1,0 +1,15 @@
+@using Swallow.Components.Inputs
+
+<div style="display: flex; flex-direction: column; gap: .5rem">
+    <SwInputText @bind-Value="@Binding"/>
+    <SwInputText @bind-Value="@Empty" placeholder="Placeholder" />
+    <SwInputText @bind-Value="@Binding" Disabled />
+    <SwInputText @bind-Value="@Binding" readonly />
+</div>
+
+@code {
+
+    private string Binding { get; set; } = "Text";
+    private string Empty { get; set; } = "";
+
+}
