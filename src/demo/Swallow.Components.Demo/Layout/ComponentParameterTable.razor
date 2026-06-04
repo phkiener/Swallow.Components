@@ -1,4 +1,5 @@
 @using Swallow.Components.Demo.Utils
+@using Swallow.Components.Typography
 @typeparam TComponent
 
 <table class="sw-table">
@@ -13,9 +14,9 @@
     {
         <tr>
             <td>@parameter.Name @(parameter.Required ? "*" : "")</td>
-            <td><code class="sw">@parameter.Type.PrettyName(parameter.IsNullable)</code></td>
+            <td><SwCode>@parameter.Type.PrettyName(parameter.IsNullable)</SwCode></td>
             <td><InlineDocumentation Type="@typeof(TComponent)" Property="@parameter.Name" /> </td>
-            <td><code class="sw">@parameter.DefaultValue</code></td>
+            <td><SwCode>@parameter.DefaultValue</SwCode></td>
         </tr>
     }
 </table>
