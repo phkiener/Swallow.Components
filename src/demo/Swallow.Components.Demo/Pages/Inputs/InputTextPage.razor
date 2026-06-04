@@ -1,0 +1,33 @@
+@page "/inputs/text"
+@using Swallow.Components.Inputs
+
+<PageHeader Title="Text Input" />
+<SupportedRenderModes Static WebSocket WebAssembly />
+
+<p>
+    A basic input field for <code class="sw">string</code> values.
+</p>
+
+<SectionHeader Title="Examples" Anchor="example" />
+
+<ComponentExample>
+    <div style="display: flex; flex-direction: column; gap: 1lh;">
+        <SwInputText @bind-Value="@Binding" />
+        <SwInputText @bind-Value="@Binding" Disabled />
+        <SwInputText @bind-Value="@Binding" placeholder="Input" />
+    </div>
+</ComponentExample>
+
+<SectionHeader Title="Reference" Anchor="reference" />
+
+<p>
+    <code class="sw">@nameof(SwInputText)</code>: <InlineDocumentation Type="@typeof(SwInputText)" />
+</p>
+
+<ComponentParameterTable TComponent="SwInputText" />
+
+@code {
+
+    private string Binding { get; set; } = "";
+
+}

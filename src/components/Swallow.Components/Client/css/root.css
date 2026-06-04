@@ -5,6 +5,7 @@
 @import "actions/button.css" layer(components);
 @import "display/alert.css" layer(components);
 @import "display/badge.css" layer(components);
+@import "inputs/input.css" layer(components);
 @import "layout/table.css" layer(components);
 @import "layout/tabs.css" layer(components);
 

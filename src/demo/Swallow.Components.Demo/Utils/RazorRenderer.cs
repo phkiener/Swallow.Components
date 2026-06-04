@@ -35,61 +35,73 @@ public sealed class RazorRenderer
         fragment.Invoke(renderTreeBuilder);
 
         var frames = renderTreeBuilder.GetFrames();
-        var nodes = Render(frames);
 
-        return nodes;
-    }
-
-    private static object?[] Render(ArrayRange<RenderTreeFrame> frames)
-    {
-        var nodes = new List<XNode>();
-        for (var index = 0; index < frames.Count;)
+        var nodes = new List<object?>();
+        var index = 0;
+        while (index < frames.Count)
         {
-            ref var currentFrame = ref frames.Array[index];
-            switch (currentFrame.FrameType)
-            {
-                case RenderTreeFrameType.Element:
-                    var element = RenderElement(frames, ref index);
-                    nodes.Add(element);
 
-                    break;
-
-                case RenderTreeFrameType.Component:
-                    var component = RenderComponent(frames, ref index);
-                    nodes.Add(component);
-
-                    break;
-
-                case RenderTreeFrameType.Text:
-                    nodes.Add(new XText(currentFrame.TextContent));
-                    index += 1;
-
-                    break;
-                case RenderTreeFrameType.Markup:
-                    var parsedMarkup = XDocument.Parse($"<root>{currentFrame.MarkupContent}</root>");
-                    foreach (var node in parsedMarkup.DescendantNodes().OfType<XText>())
-                    {
-                        var depth = Depth(node);
-
-                        var leadingWhitespace = node.PreviousNode is null
-                            ? $"\n{new string(' ', 2 * (depth + 1))}"
-                            : $"\n\n{new string(' ', 2 * (depth + 1))}";
-                        var trailingWhitespace = $"\n{new string(' ', 2 * depth)}";
-
-                        node.Value = $"{leadingWhitespace}{node.Value.Trim()}{trailingWhitespace}";
-                    }
-
-                    nodes.AddRange(parsedMarkup.Root?.Nodes() ?? []);
-                    index += 1;
-
-                    break;
-                default:
-                    index += 1;
-                    break;
-            }
+            var currentFrameNodes = RenderFrame(frames, ref index);
+            nodes.AddRange(currentFrameNodes);
         }
 
-        return nodes.Cast<object?>().ToArray();
+        return nodes.ToArray();
+    }
+
+    private static object?[] RenderFrame(ArrayRange<RenderTreeFrame> frames, ref int index)
+    {
+        ref var currentFrame = ref frames.Array[index];
+        switch (currentFrame.FrameType)
+        {
+            case RenderTreeFrameType.Text:
+                index += 1;
+                return [new XText(currentFrame.TextContent)];
+
+            case RenderTreeFrameType.Markup:
+                index += 1;
+
+                var parsedMarkup = XDocument.Parse($"<root>{currentFrame.MarkupContent}</root>");
+                foreach (var node in parsedMarkup.DescendantNodes().OfType<XText>())
+                {
+                    var depth = Depth(node);
+
+                    var leadingWhitespace = node.PreviousNode is null
+                        ? $"\n{new string(' ', 2 * (depth + 1))}"
+                        : $"\n\n{new string(' ', 2 * (depth + 1))}";
+                    var trailingWhitespace = $"\n{new string(' ', 2 * depth)}";
+
+                    node.Value = $"{leadingWhitespace}{node.Value.Trim()}{trailingWhitespace}";
+                }
+
+                return parsedMarkup.Root is null ? [] : [..parsedMarkup.Root.Nodes()];
+
+            case RenderTreeFrameType.Attribute:
+                index += 1;
+
+                if (currentFrame.AttributeValue is RenderFragment renderFragment)
+                {
+                    var renderedFragment = Render(renderFragment);
+
+                    return currentFrame.AttributeName is "ChildContent"
+                        ? renderedFragment
+                        : [new XElement(currentFrame.AttributeName, renderedFragment)];
+                }
+
+                return [new XAttribute(currentFrame.AttributeName, currentFrame.AttributeValue)];
+
+            case RenderTreeFrameType.Element:
+                var element = RenderElement(frames, ref index);
+                return [element];
+
+            case RenderTreeFrameType.Component:
+                var component = RenderComponent(frames, ref index);
+                return [component];
+
+            default:
+                index += 1;
+                return [];
+        }
+
     }
 
     private static XElement RenderComponent(ArrayRange<RenderTreeFrame> frames, ref int index)
@@ -97,31 +109,14 @@ public sealed class RazorRenderer
         ref var componentFrame = ref frames.Array[index];
         Debug.Assert(componentFrame.FrameType is RenderTreeFrameType.Component, "Starting frame is not of type Component");
 
-        index += 1;
         var component = new XElement(componentFrame.ComponentType.Name);
-        for (var offset = 1; offset < componentFrame.ComponentSubtreeLength; ++offset, ++index)
-        {
-            ref var innerFrame = ref frames.Array[index];
-            if (innerFrame.FrameType is RenderTreeFrameType.Attribute)
-            {
-                if (innerFrame.AttributeValue is RenderFragment innerFragment)
-                {
-                    var element = Render(innerFragment);
-                    if (innerFrame.AttributeName is "ChildContent")
-                    {
-                        component.Add(element);
-                    }
-                    else
-                    {
-                        component.Add(new XElement(innerFrame.AttributeName, element));
-                    }
+        var endFrame = index + componentFrame.ElementSubtreeLength;
 
-                }
-                else
-                {
-                    component.SetAttributeValue(innerFrame.AttributeName, innerFrame.AttributeValue);
-                }
-            }
+        index += 1;
+        for (; index < endFrame;)
+        {
+            var rendered = RenderFrame(frames, ref index);
+            component.Add(rendered);
         }
 
         return component;
@@ -132,15 +127,14 @@ public sealed class RazorRenderer
         ref var elementFrame = ref frames.Array[index];
         Debug.Assert(elementFrame.FrameType is RenderTreeFrameType.Element, "Starting frame is not of type Element");
 
-        index += 1;
         var element = new XElement(elementFrame.ElementName);
-        for (var offset = 0; offset < elementFrame.ElementSubtreeLength; ++offset, ++index)
+        var endFrame = index + elementFrame.ElementSubtreeLength;
+
+        index += 1;
+        for (; index < endFrame;)
         {
-            ref var innerFrame = ref frames.Array[index];
-            if (innerFrame.FrameType is RenderTreeFrameType.Attribute)
-            {
-                element.SetAttributeValue(innerFrame.AttributeName, innerFrame.AttributeValue);
-            }
+            var rendered = RenderFrame(frames, ref index);
+            element.Add(rendered);
         }
 
         return element;

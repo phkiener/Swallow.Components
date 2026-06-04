@@ -1,0 +1,9 @@
+@inherits InputText
+
+<input disabled="@Disabled"
+       @attributes="AdditionalAttributes"
+       name="@NameAttributeValue"
+       type="text"
+       class="@CssClass sw-input"
+       @bind="CurrentValueAsString"
+       @ref="Element">

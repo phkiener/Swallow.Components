@@ -1,6 +1,7 @@
-using System.Text;
-using System.Xml;
-using System.Xml.Linq;
+using AngleSharp;
+using AngleSharp.Html;
+using AngleSharp.Html.Dom;
+using AngleSharp.Html.Parser;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
@@ -10,7 +11,7 @@ namespace Swallow.Components.Demo.Utils;
 
 public sealed class MarkupRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
 {
-    private static readonly XmlWriterSettings XmlWriterSettings = new() { OmitXmlDeclaration = true, Indent = true };
+    private static readonly PrettyMarkupFormatter formatter = new() { NewLine = "\n", Indentation = "  " };
     private readonly HtmlRenderer htmlRenderer = new(serviceProvider, loggerFactory);
 
     public async Task<string> RenderAsync(RenderFragment renderFragment)
@@ -35,39 +36,11 @@ public sealed class MarkupRenderer(IServiceProvider serviceProvider, ILoggerFact
 
     private static string FormatMarkup(string markup)
     {
-        var builder = new StringBuilder();
-        using var xmlWriter = XmlTextWriter.Create(builder, XmlWriterSettings);
+        var parser = new HtmlParser();
+        var document = parser.ParseDocument(markup);
 
-        var document = XDocument.Parse(markup);
-        foreach (var node in document.DescendantNodes().OfType<XText>())
-        {
-            var depth = Depth(node) - 1;
-
-            var leadingWhitespace = node.PreviousNode is null
-                ? $"\n{new string(' ', 2 * (depth + 1))}"
-                : $"\n\n{new string(' ', 2 * (depth + 1))}";
-            var trailingWhitespace = $"\n{new string(' ', 2 * depth)}";
-
-            node.Value = $"{leadingWhitespace}{node.Value.Trim()}{trailingWhitespace}";
-        }
-
-        document.WriteTo(xmlWriter);
-        xmlWriter.Flush();
-
-        return builder.ToString();
-    }
-
-    private static int Depth(XNode node)
-    {
-        var depth = 0;
-        XNode? current = node;
-        while (current?.Parent != null)
-        {
-            current = current.Parent;
-            depth++;
-        }
-
-        return depth;
+        var formattedNodes = document.Body?.Children.Select(c => c.ToHtml(formatter)) ?? [];
+        return string.Join("", formattedNodes);
     }
 
     private sealed class Fragment : ComponentBase
