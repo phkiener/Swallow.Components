@@ -1,6 +1,5 @@
 using AngleSharp;
 using AngleSharp.Html;
-using AngleSharp.Html.Dom;
 using AngleSharp.Html.Parser;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -40,7 +39,7 @@ public sealed class MarkupRenderer(IServiceProvider serviceProvider, ILoggerFact
         var document = parser.ParseDocument(markup);
 
         var formattedNodes = document.Body?.Children.Select(c => c.ToHtml(formatter)) ?? [];
-        return string.Join("", formattedNodes);
+        return string.Join("", formattedNodes).Trim();
     }
 
     private sealed class Fragment : ComponentBase

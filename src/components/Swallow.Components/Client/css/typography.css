@@ -26,6 +26,8 @@ pre > code.sw {
     overflow: auto;
 
     border: none;
+    padding-inline: 0;
+    padding-block: 0;
 
     background-color: unset;
     white-space: pre;
