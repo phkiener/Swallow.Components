@@ -1,0 +1,29 @@
+@page "/typography/code-block"
+@using Swallow.Components.Typography
+
+<PageHeader Title="Code Block" />
+<SupportedRenderModes Static WebSocket WebAssembly />
+
+<p>
+    An block of code.
+</p>
+
+<SectionHeader Title="Examples" Anchor="example" />
+
+<ComponentExample>
+    The config looks like this:
+
+    <SwCodeBlock>
+        [core]
+        user.name = "admin"
+        user.password = "hunter2"
+    </SwCodeBlock>
+</ComponentExample>
+
+<SectionHeader Title="Reference" Anchor="reference" />
+
+<p>
+    <code class="sw">@nameof(SwCodeBlock)</code>: <InlineDocumentation Type="@typeof(SwCodeBlock)" />
+</p>
+
+<ComponentParameterTable TComponent="SwCodeBlock" />

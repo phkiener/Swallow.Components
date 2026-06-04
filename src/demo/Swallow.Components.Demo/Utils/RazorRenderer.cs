@@ -18,7 +18,7 @@ public sealed class RazorRenderer
     {
         var elements = Render(renderFragment).Cast<object>().ToArray();
         var document = new XDocument();
-        document.Add(elements);
+        document.Add(new XElement("root", elements));
 
         var builder = new StringBuilder();
         using var xmlWriter = XmlTextWriter.Create(builder, XmlWriterSettings);

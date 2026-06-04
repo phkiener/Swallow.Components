@@ -1,0 +1,23 @@
+@page "/typography/code"
+@using Swallow.Components.Typography
+
+<PageHeader Title="Code" />
+<SupportedRenderModes Static WebSocket WebAssembly />
+
+<p>
+    An inline code-snippet.
+</p>
+
+<SectionHeader Title="Examples" Anchor="example" />
+
+<ComponentExample>
+    You can use <SwCode>quit()</SwCode> to quit.
+</ComponentExample>
+
+<SectionHeader Title="Reference" Anchor="reference" />
+
+<p>
+    <code class="sw">@nameof(SwCode)</code>: <InlineDocumentation Type="@typeof(SwCode)" />
+</p>
+
+<ComponentParameterTable TComponent="SwCode" />
